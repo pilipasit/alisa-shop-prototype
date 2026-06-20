@@ -25,7 +25,7 @@ function CartScreen({ nav, cart, setQty, removeItem }) {
       <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
         {cart.map((it,idx)=>(
           <div key={idx} style={{ display:'flex', gap:12, background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)', padding:12, boxShadow:'var(--ring-soft)' }}>
-            <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} /></div>
+            <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} src={it.p.img} alt={it.p.name} /></div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:800, fontSize:14.5, color:'var(--ink-900)', lineHeight:1.2 }}>{it.p.name}</div>
               <div style={{ fontSize:12, color:'var(--ink-400)', fontWeight:700, margin:'2px 0 8px' }}>Арт. {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
@@ -247,7 +247,7 @@ function LinkBioScreen({ nav }) {
   const contacts = [['Instagram Direct','instagram',IG],['Viber','phone',null],['Telegram','send',null],['Каталог на сайті','globe',null]];
   return (
     <div style={{ textAlign:'center' }}>
-      <img src="../../assets/logo-primary.svg" style={{ height:54, margin:'8px 0 6px' }} />
+      <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:54, margin:'8px 0 6px' }} />
       <div style={{ fontWeight:700, fontSize:15, color:'var(--ink-500)' }}>Дитячий магазин «Аліса»</div>
       <div style={{ fontSize:13, color:'var(--ink-400)', fontWeight:600, margin:'2px 0 18px' }}>Кам’янське · Дніпро · 3 магазини</div>
 

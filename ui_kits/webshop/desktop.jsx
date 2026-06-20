@@ -22,11 +22,11 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
       <div style={{ background:'var(--pink-500)', color:'#fff', fontSize:13, fontWeight:700 }}>
         <div style={{ maxWidth:1200, margin:'0 auto', padding:'7px 24px', display:'flex', justifyContent:'space-between' }}>
           <span style={{display:'flex',alignItems:'center',gap:7}}><i data-lucide="truck" style={{width:15,height:15}}></i>Доставка Новою поштою · самовивіз з магазину безкоштовно</span>
-          <span style={{display:'flex',gap:18}}><span style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}} onClick={()=>tabNav('stores')}><i data-lucide="map-pin" style={{width:14,height:14}}></i>3 магазини</span><span style={{display:'flex',alignItems:'center',gap:6}}><i data-lucide="phone" style={{width:14,height:14}}></i>+380 67 000 11 02</span></span>
+          <span style={{display:'flex',gap:18}}><span style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}} onClick={()=>tabNav('stores')}><i data-lucide="map-pin" style={{width:14,height:14}}></i>3 магазини</span><span style={{display:'flex',alignItems:'center',gap:6}}><a href="tel:+380988222964" style={{color:'#fff',textDecoration:'none',display:'flex',alignItems:'center',gap:6}}><i data-lucide="phone" style={{width:14,height:14}}></i>{S.PHONE}</a></span></span>
         </div>
       </div>
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'16px 24px', display:'flex', alignItems:'center', gap:26 }}>
-        <img src="../../assets/logo-primary.svg" style={{ height:40, cursor:'pointer' }} onClick={()=>tabNav('home')} />
+        <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:40, cursor:'pointer' }} onClick={()=>tabNav('home')} />
         <div style={{ flex:1, position:'relative', maxWidth:520 }}>
           <i data-lucide="search" style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:19, height:19, color:'var(--ink-400)' }}></i>
           <input readOnly placeholder="Пошук товарів — наприклад, «комбінезон»" onClick={openSearch} style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', fontFamily:'var(--font-body)', fontWeight:600, fontSize:15, outline:'none', cursor:'pointer', background:'#fff' }} />
@@ -140,7 +140,7 @@ function DesktopHome({ nav, tabNav, addToCart }) {
       {/* instagram */}
       <Section title="Ми в Instagram" link="@alisa.kids.shop" onLink={()=>window.open(IG,'_blank')}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:14 }}>
-          {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} /></div>)}
+          {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} src={p.img} alt={p.name} /></div>)}
         </div>
       </Section>
     </div>
@@ -156,7 +156,7 @@ function Footer({ nav, tabNav, openDM }) {
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'44px 24px 28px' }}>
         <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr 1fr 1.2fr', gap:32 }}>
           <div>
-            <img src="../../assets/logo-primary.svg" style={{ height:36 }} />
+            <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:36 }} />
             <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, lineHeight:1.6, margin:'14px 0 16px', maxWidth:260 }}>Сімейний магазин дитячого одягу, взуття та іграшок. 3 магазини у Кам’янському та Дніпрі.</p>
             <div style={{ display:'flex', gap:10 }}>
               {social.map(s=> <span key={s[0]} onClick={s[1]} style={{ cursor:'pointer', width:40, height:40, borderRadius:'50%', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={s[0]} style={{width:19,height:19,color:'var(--pink-600)'}}></i></span>)}
@@ -268,7 +268,7 @@ function SearchOverlay({ onClose, nav, addToCart }) {
 }
 
 function DMSheet({ onClose }) {
-  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00',IG],['Viber','phone','var(--info)','Швидка відповідь',null],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)','+380 67 000 11 02',null]];
+  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00',IG],['Viber','phone','var(--info)','Швидка відповідь','viber://chat?number=%2B380988222964'],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)',S.PHONE,'tel:+380988222964']];
   const pick = (o)=>{ if(o[4]) window.open(o[4],'_blank'); onClose(); };
   React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   return (

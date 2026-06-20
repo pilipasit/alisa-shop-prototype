@@ -80,7 +80,7 @@ function HomeScreen({ nav, addToCart }) {
       <div style={{ height:24 }}></div>
       <SectionHead title="Ми в Instagram" action="@alisa.kids.shop" onAction={()=>nav('linkbio')} />
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
-        {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} /></div>)}
+        {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} src={p.img} alt={p.name} /></div>)}
       </div>
     </div>
   );
@@ -170,9 +170,9 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
           {b && <Badge tone={b.t}>{b.l}</Badge>}
           {p.oldPrice && <Badge tone="sale">−{disc(p)}%</Badge>}
         </div>
-        <Photo cat={cat} ratio="1 / 1" radius="var(--radius-lg)" big />
+        <Photo cat={cat} ratio="1 / 1" radius="var(--radius-lg)" big src={p.img} alt={p.name} />
         <div style={{ display:'flex', gap:8, marginTop:10 }}>
-          {[0,1,2].map(i=> <div key={i} onClick={()=>setGallery(i)} style={{ flex:'0 0 64px', border:'2px solid '+(gallery===i?'var(--pink-500)':'var(--ink-200)'), borderRadius:'var(--radius-md)', overflow:'hidden', cursor:'pointer' }}><Photo cat={cat} /></div>)}
+          {[0,1,2].map(i=> <div key={i} onClick={()=>setGallery(i)} style={{ flex:'0 0 64px', border:'2px solid '+(gallery===i?'var(--pink-500)':'var(--ink-200)'), borderRadius:'var(--radius-md)', overflow:'hidden', cursor:'pointer' }}><Photo cat={cat} src={p.img} alt={p.name} /></div>)}
         </div>
       </div>
 

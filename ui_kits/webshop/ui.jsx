@@ -10,12 +10,21 @@ const C600 = { blue:'var(--blue-600)', green:'var(--green-600)', yellow:'var(--y
 
 const Icon = (n, props={}) => <i data-lucide={n} {...props}></i>;
 
-/* product/category photo placeholder — soft tint + category icon (no real photos yet) */
-function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false }) {
+/* product/category photo — real image when `src` is set, else soft-tint placeholder */
+function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false, src, alt }) {
   const col = cat ? cat.color : 'pink';
   const ic = icon || (cat ? cat.icon : 'image');
+  const [failed, setFailed] = React.useState(false);
+  if (src && !failed) {
+    return (
+      <div style={{ aspectRatio: ratio, width: '100%', background: '#fff', borderRadius: radius, overflow: 'hidden' }}>
+        <img src={src} alt={alt || (cat ? cat.uk : 'Товар')} loading="lazy" onError={() => setFailed(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      </div>
+    );
+  }
   return (
-    <div style={{ aspectRatio: ratio, width: '100%', background: C100[col], borderRadius: radius,
+    <div role="img" aria-label={alt || 'Фото товару'} style={{ aspectRatio: ratio, width: '100%', background: C100[col], borderRadius: radius,
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
       <i data-lucide={ic} style={{ width: big ? 84 : 46, height: big ? 84 : 46, color: C500[col], strokeWidth: 1.7, opacity: .85 }}></i>
       <span style={{ position:'absolute', bottom: 8, fontSize: 10, fontWeight: 700, color: C600[col], opacity:.65 }}>фото товару</span>
@@ -65,7 +74,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
         {p.oldPrice && p.badge!=='sale' && <Badge tone="sale">−{disc(p)}%</Badge>}
       </div>
       <div onClick={onOpen} style={{ cursor:'pointer', padding:10 }}>
-        <Photo cat={cat} />
+        <Photo cat={cat} src={p.img} alt={p.name} />
       </div>
       <div style={{ padding:'4px 12px 14px', display:'flex', flexDirection:'column', flex:1 }}>
         <div onClick={onOpen} style={{ cursor:'pointer', fontWeight:800, fontSize:15, color:'var(--ink-900)', lineHeight:1.25, minHeight:38 }}>{p.name}</div>

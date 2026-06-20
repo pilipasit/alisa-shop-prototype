@@ -67,7 +67,7 @@ function App() {
             ? <AIb aria-label="Назад" variant="ghost" onClick={back}>{I('arrow-left')}</AIb>
             : <AIb aria-label="Меню" variant="ghost" onClick={()=>setOverlay('menu')}>{I('menu')}</AIb>}
           {showLogo
-            ? <img src="../../assets/logo-primary.svg" style={{ height:30 }} />
+            ? <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:30 }} />
             : <span style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:18, color:'var(--ink-900)' }}>{TITLES[cur.r]||''}</span>}
           <div style={{ display:'flex', gap:2 }}>
             <AIb aria-label="Пошук" variant="ghost" onClick={()=>setOverlay('search')}>{I('search')}</AIb>
@@ -146,7 +146,7 @@ function FiltersDrawer({ onClose, nav }) {
 }
 
 function DMSheet({ onClose }) {
-  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00','https://www.instagram.com/alisa.kids.shop/'],['Viber','phone','var(--info)','Швидка відповідь',null],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)','+380 67 000 11 02',null]];
+  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00','https://www.instagram.com/alisa.kids.shop/'],['Viber','phone','var(--info)','Швидка відповідь','viber://chat?number=%2B380988222964'],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)',(Sd.PHONE||'+380 98 822 29 64'),'tel:+380988222964']];
   const pick = (o)=>{ if(o[4]) window.open(o[4],'_blank'); onClose(); };
   return (
     <Sheet onClose={onClose}>
@@ -204,7 +204,7 @@ function MenuDrawer({ onClose, nav }) {
   return (
     <Sheet onClose={onClose} side="left">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-        <img src="../../assets/logo-primary.svg" style={{ height:30 }} />
+        <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:30 }} />
         <AIb aria-label="Закрити" variant="ghost" onClick={onClose}>{I('x')}</AIb>
       </div>
       <div style={{ display:'flex', flexDirection:'column' }}>

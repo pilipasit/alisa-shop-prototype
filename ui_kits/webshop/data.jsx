@@ -12,15 +12,18 @@ const CATS = [
   { id: 'sale',     uk: 'Розпродаж', color: 'pinkDeep', icon: 'badge-percent', desc: 'Знижки на сезонні товари та останні розміри.' },
 ];
 
+const PHONE = '+380 98 822 29 64';
 const STORES = [
-  { id: 'A-1', name: 'Аліса А-1', city: 'Кам’янське', area: 'Лівий берег', addr: 'вул. Центральна, 14', hours: 'Пн–Нд 9:00–20:00', phone: '+380 67 000 11 01' },
-  { id: 'A-2', name: 'Аліса А-2', city: 'Кам’янське', area: 'Правий берег · ТРЦ «Дніпро Плаза»', addr: 'пр. Свободи, 51, 2 поверх', hours: 'Пн–Нд 10:00–21:00', phone: '+380 67 000 11 02' },
-  { id: 'A-3', name: 'Аліса А-3', city: 'Дніпро', area: 'Центр', addr: 'пр. Олександра Поля, 33', hours: 'Пн–Нд 9:00–21:00', phone: '+380 67 000 11 03' },
+  { id: 'A-1', name: 'Аліса А-1', city: 'Кам’янське', area: 'бульвар Будівельників', addr: 'бульвар Будівельників, 1-Б', hours: 'Пн–Нд 9:00–20:00', phone: PHONE },
+  { id: 'A-2', name: 'Аліса А-2', city: 'Кам’янське', area: 'Правий берег · ТРЦ «Дніпро Плаза»', addr: 'пр. Свободи, 51, 2 поверх', hours: 'Пн–Нд 10:00–21:00', phone: PHONE },
+  { id: 'A-3', name: 'Аліса А-3', city: 'Дніпро', area: 'Центр', addr: 'пр. Олександра Поля, 33', hours: 'Пн–Нд 9:00–21:00', phone: PHONE },
 ];
 
 // availability helper: 'in' | 'last' | 'out'
-const P = (id, name, cat, price, oldPrice, ages, badge, av, hit) =>
-  ({ id, name, cat, price, oldPrice, ages, badge, av, hit });
+const P = (id, name, cat, price, oldPrice, ages, badge, av, hit, img) =>
+  ({ id, name, cat, price, oldPrice, ages, badge, av, hit, img });
+
+const IMG = (f) => '../../assets/products/' + f;
 
 const PRODUCTS = [
   P('104223', 'Комбінезон зимовий «Сніжинка»', 'clothing', 649, 999, '80–110', 'sale',   { 'A-1':'in','A-2':'in','A-3':'last' }, true),
@@ -39,6 +42,12 @@ const PRODUCTS = [
   P('502118', 'Рюкзак шкільний «Старт»',       'school',   599, 849, 'one',    'sale',   { 'A-1':'in','A-2':'in','A-3':'in' }, true),
   P('503277', 'Пенал на блискавці',            'school',    99, null,'one',    'new',    { 'A-1':'in','A-2':'in','A-3':'in' }, false),
   P('701055', 'Бодік для немовлят (3 шт)',     'baby',     279, 359, '56–74',  'sale',   { 'A-1':'in','A-2':'in','A-3':'in' }, true),
+  // --- real products (photos in assets/products/) ---
+  P('801001', 'Надувний круг для плавання',     'seasonal', 199, 279, '3–8 р',  'new',  { 'A-1':'in','A-2':'in','A-3':'last' }, true,  IMG('swim-ring.jpg')),
+  P('801002', 'Надувний човник «Поліція»',      'seasonal', 349, 449, '1–3 р',  'sale', { 'A-1':'in','A-2':'last','A-3':'in' }, true,  IMG('police-boat.jpg')),
+  P('802001', 'Батут із захисною сіткою, 140 см','toys',    2499,2999, '3–10 р', 'hit',  { 'A-1':'in','A-2':'out','A-3':'in' },  true,  IMG('trampoline.jpg')),
+  P('802002', 'Дитяча гірка Doloni',            'toys',     1799, null,'1–5 р',  null,   { 'A-1':'last','A-2':'in','A-3':'in' }, false, IMG('slide-doloni.jpg')),
+  P('401501', 'Костюм «Зебра»: футболка + спідниця','clothing',499,649,'98–128','sale', { 'A-1':'in','A-2':'in','A-3':'in' },   true,  IMG('zebra-set.jpg')),
 ];
 
 // price buckets for sale page
@@ -57,7 +66,7 @@ const AV_LABEL = {
   out:  { uk: 'Немає',           tone: 'gray' },
 };
 
-window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL,
+window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
   catById: (id) => CATS.find(c => c.id === id),
   byId: (id) => PRODUCTS.find(p => p.id === id),
   inCat: (id) => PRODUCTS.filter(p => p.cat === id),
