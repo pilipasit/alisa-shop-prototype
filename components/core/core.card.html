@@ -1,0 +1,77 @@
+<!-- @dsCard group="Components" viewport="700x600" name="Core — Buttons, Tags, Inputs" subtitle="Buttons, badges, tags, icon buttons, inputs, notices" -->
+<!DOCTYPE html><html lang="uk"><head><meta charset="utf8"><link rel="stylesheet" href="../../styles.css">
+<style>
+  body{margin:0;font-family:var(--font-body);background:var(--cream);padding:22px;color:var(--ink-900)}
+  .sec{margin-bottom:22px}
+  .h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-400);margin:0 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+</style></head><body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react">
+const { Button, Badge, Tag, IconButton, Input, Notice } = window.AlisaKidsStoreDesignSystem_194dcf;
+const I = (n) => <i data-lucide={n}></i>;
+function Demo(){
+  return (<>
+    <div className="sec"><p className="h">Buttons</p>
+      <div className="row">
+        <Button variant="primary">Купити</Button>
+        <Button variant="secondary" icon={I('heart')}>У бажане</Button>
+        <Button variant="sale">Розпродаж −50%</Button>
+        <Button variant="ghost">Скасувати</Button>
+      </div>
+      <div className="row" style={{marginTop:12}}>
+        <Button size="sm">Малий</Button>
+        <Button size="md">Середній</Button>
+        <Button size="lg" iconRight={I('arrow-right')}>Великий</Button>
+        <Button disabled>Недоступно</Button>
+      </div>
+    </div>
+    <div className="sec"><p className="h">Badges</p>
+      <div className="row">
+        <Badge tone="sale">−30%</Badge>
+        <Badge tone="new">Новинка</Badge>
+        <Badge tone="info" dot>В наявності</Badge>
+        <Badge tone="new" variant="soft">Хіт</Badge>
+        <Badge tone="warning" variant="soft">Останні</Badge>
+        <Badge tone="neutral" variant="soft">Артикул</Badge>
+      </div>
+    </div>
+    <div className="sec"><p className="h">Tags · category accents</p>
+      <div className="row">
+        <Tag color="pink" dot>Дівчатам</Tag>
+        <Tag color="blue" dot>Хлопцям</Tag>
+        <Tag color="green" dot>Іграшки</Tag>
+        <Tag color="yellow" dot>Сезон</Tag>
+        <Tag color="neutral" onRemove={()=>{}}>0–2 роки</Tag>
+      </div>
+    </div>
+    <div className="sec"><p className="h">Icon buttons</p>
+      <div className="row">
+        <IconButton aria-label="a" variant="solid">{I('shopping-bag')}</IconButton>
+        <IconButton aria-label="b" variant="soft">{I('heart')}</IconButton>
+        <IconButton aria-label="c" variant="outline">{I('search')}</IconButton>
+        <IconButton aria-label="d" variant="ghost">{I('x')}</IconButton>
+      </div>
+    </div>
+    <div className="grid2">
+      <div className="sec"><p className="h">Inputs</p>
+        <Input label="Пошук" icon={I('search')} placeholder="Знайти товар" />
+        <div style={{height:10}}/>
+        <Input label="Телефон" error="Невірний номер" defaultValue="+380" />
+      </div>
+      <div className="sec"><p className="h">Notice</p>
+        <Notice tone="sale" title="Акція тижня">Знижки на зимову колекцію до неділі.</Notice>
+      </div>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+setTimeout(()=>window.lucide&&window.lucide.createIcons(),60);
+</script>
+</body></html>

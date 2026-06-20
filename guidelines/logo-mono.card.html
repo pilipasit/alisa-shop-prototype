@@ -1,0 +1,19 @@
+<!-- @dsCard group="Brand" viewport="700x230" name="Logo — Mono & On Color" subtitle="Single-color uses: pink, ink, white on dark / photo" -->
+<!DOCTYPE html><html><head><meta charset="utf8"><link rel="stylesheet" href="../styles.css">
+<style>
+  body{margin:0;font-family:var(--font-body);background:var(--white);padding:20px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .cell{border-radius:var(--radius-lg);padding:22px 18px;display:flex;flex-direction:column;gap:12px;align-items:center;box-shadow:var(--ring-soft)}
+  .cell img{height:48px}
+  .lbl{font-size:11px;font-weight:700;color:var(--ink-500);text-transform:uppercase;letter-spacing:.04em}
+  .dark{background:var(--ink-900)}
+  .dark .lbl{color:rgba(255,255,255,.7)}
+  .pink{background:var(--pink-500)}
+  .pink .lbl{color:rgba(255,255,255,.9)}
+</style></head><body>
+  <div class="grid">
+    <div class="cell" style="background:var(--cream)"><img src="../assets/logo-mono-pink.svg"><div class="lbl">Mono pink</div></div>
+    <div class="cell" style="background:var(--cream)"><img src="../assets/logo-mono-ink.svg"><div class="lbl">Mono ink</div></div>
+    <div class="cell dark"><img src="../assets/logo-mono-white.svg"><div class="lbl">White / reversed</div></div>
+  </div>
+</body></html>

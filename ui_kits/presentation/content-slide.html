@@ -1,0 +1,15 @@
+<!-- @dsCard group="Slides" viewport="1280x720" name="Content Slide" subtitle="Data slide using category signs + badge" -->
+<!DOCTYPE html><html lang="uk"><head><meta charset="utf8"><link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;background:var(--cream)}#r>div{box-shadow:var(--shadow-lg)}</style></head><body>
+<div id="r"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react" src="slides.jsx"></script>
+<script type="text/babel" data-presets="react">
+ReactDOM.createRoot(document.getElementById('r')).render(<ContentSlide/>);
+setTimeout(()=>window.lucide&&window.lucide.createIcons(),80);
+</script>
+</body></html>

@@ -1,0 +1,51 @@
+<!-- @dsCard group="Components" viewport="700x460" name="Retail — Prices, Bursts, Signs" subtitle="Price tags, sale bursts & category signs" -->
+<!DOCTYPE html><html lang="uk"><head><meta charset="utf8"><link rel="stylesheet" href="../../styles.css">
+<style>
+  body{margin:0;font-family:var(--font-body);background:var(--cream);padding:22px;color:var(--ink-900)}
+  .sec{margin-bottom:22px}
+  .h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-400);margin:0 0 12px}
+  .row{display:flex;flex-wrap:wrap;gap:22px;align-items:center}
+  .signs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pcard{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:16px 20px;display:inline-flex;flex-direction:column;gap:4px}
+  .pcard small{font-weight:700;color:var(--ink-500);font-size:13px}
+</style></head><body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react">
+const { PriceTag, SaleBurst, CategorySign } = window.AlisaKidsStoreDesignSystem_194dcf;
+const I = (n) => <i data-lucide={n}></i>;
+function Demo(){
+  return (<>
+    <div className="sec"><p className="h">Price tags · ціни в гривнях</p>
+      <div className="row">
+        <div className="pcard"><small>Звичайна</small><PriceTag price="349" size="lg" /></div>
+        <div className="pcard"><small>Зі знижкою</small><PriceTag price="249" oldPrice="349" size="lg" /></div>
+        <div className="pcard"><small>З копійками</small><PriceTag price="89,90" size="md" /></div>
+      </div>
+    </div>
+    <div className="sec"><p className="h">Sale bursts</p>
+      <div className="row">
+        <SaleBurst top="знижка" main="−50%" color="pink" size={132} />
+        <SaleBurst main="АКЦІЯ" sub="до неділі" color="blue" size={132} />
+        <SaleBurst main="NEW" color="green" shape="circle" size={120} />
+        <SaleBurst top="ціна" main="99₴" color="yellow" size={120} />
+      </div>
+    </div>
+    <div className="sec"><p className="h">Category signs</p>
+      <div className="signs">
+        <CategorySign title="Одяг" subtitle="0–12 років" color="blue" icon={I('shirt')} />
+        <CategorySign title="Іграшки" subtitle="для всіх віку" color="green" icon={I('blocks')} />
+        <CategorySign title="Взуття" color="pink" icon={I('footprints')} />
+        <CategorySign title="Сезон" subtitle="новинки" color="yellow" icon={I('sun')} />
+      </div>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+setTimeout(()=>window.lucide&&window.lucide.createIcons(),60);
+</script>
+</body></html>

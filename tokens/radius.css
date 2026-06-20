@@ -1,0 +1,10 @@
+/* Alisa Kids Store — Radius tokens. The brand is soft & rounded. */
+:root {
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   16px;   /* default cards, inputs, buttons */
+  --radius-lg:   24px;   /* product cards, price tags */
+  --radius-xl:   32px;   /* posters, large panels */
+  --radius-pill: 999px;  /* tags, chips, pill buttons */
+  --radius-blob: 42% 58% 60% 40% / 45% 42% 58% 55%; /* playful organic blob */
+}

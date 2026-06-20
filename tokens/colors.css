@@ -1,0 +1,86 @@
+/* Alisa Kids Store — Color tokens
+   Palette extracted directly from the brand logos. Pink/magenta is the lead;
+   blue, green and yellow form the playful category accent set. Neutrals are
+   warmed with a touch of plum so nothing reads as cold corporate gray. */
+:root {
+  /* ---- Brand: Pink (primary, dominant) ---- */
+  --pink-600: #b5026a;   /* deepest — text on light, borders */
+  --pink-500: #df0380;   /* core brand pink — the logo pink */
+  --pink-400: #eb549c;   /* lighter logo pink */
+  --pink-300: #f48cc0;   /* tint */
+  --pink-200: #f9c0dd;   /* soft tint */
+  --pink-100: #fdeef6;   /* surface wash */
+
+  /* ---- Brand: Blue (sky) ---- */
+  --blue-600: #0b7fa6;   /* accessible text/border */
+  --blue-500: #0cb0e3;   /* logo blue */
+  --blue-300: #7ed5f1;
+  --blue-100: #e7f6fc;
+
+  /* ---- Brand: Green (leaf) ---- */
+  --green-600: #0a7a3b;  /* accessible text/border */
+  --green-500: #0d9a4b;  /* logo green */
+  --green-300: #74c894;
+  --green-100: #e6f5ec;
+
+  /* ---- Brand: Yellow (sunny) ---- */
+  --yellow-600: #c79400; /* accessible text on light */
+  --yellow-500: #f4c800; /* usable accent yellow */
+  --yellow-400: #fcec00; /* logo yellow (decorative / fills only) */
+  --yellow-100: #fff8cc;
+
+  /* ---- Red (errors only — not a brand color) ---- */
+  --red-500: #e23636;
+  --red-100: #fdeaea;
+
+  /* ---- Neutrals (warm, plum-tinted) ---- */
+  --ink-900: #2e1a26;    /* near-black plum — primary text */
+  --ink-700: #4a3340;
+  --ink-500: #6f5563;    /* secondary text */
+  --ink-400: #97838f;
+  --ink-300: #c2b3bc;    /* disabled, hairlines */
+  --ink-200: #e4dbe0;    /* borders */
+  --ink-100: #f1ebee;    /* subtle fills */
+  --cream:   #fffaf7;    /* warm off-white page background */
+  --white:   #ffffff;
+
+  /* ====================== SEMANTIC ALIASES ====================== */
+  --brand:            var(--pink-500);
+  --brand-strong:     var(--pink-600);
+  --brand-soft:       var(--pink-100);
+
+  --text-strong:      var(--ink-900);
+  --text-body:        var(--ink-700);
+  --text-muted:       var(--ink-500);
+  --text-on-brand:    var(--white);
+  --text-link:        var(--pink-600);
+
+  --surface-page:     var(--cream);
+  --surface-card:     var(--white);
+  --surface-sunken:   var(--ink-100);
+  --surface-brand:    var(--pink-500);
+
+  --border-default:   var(--ink-200);
+  --border-strong:    var(--ink-300);
+  --border-brand:     var(--pink-500);
+
+  /* Category accent set — used for signage, tags, price categories */
+  --cat-pink:   var(--pink-500);
+  --cat-blue:   var(--blue-500);
+  --cat-green:  var(--green-500);
+  --cat-yellow: var(--yellow-400);
+
+  /* Status */
+  --success:       var(--green-600);
+  --success-soft:  var(--green-100);
+  --warning:       var(--yellow-600);
+  --warning-soft:  var(--yellow-100);
+  --danger:        var(--red-500);
+  --danger-soft:   var(--red-100);
+  --info:          var(--blue-600);
+  --info-soft:     var(--blue-100);
+
+  /* Sale / promo (deep pink reads as urgent without leaving the palette) */
+  --sale:          var(--pink-600);
+  --sale-soft:     var(--pink-100);
+}

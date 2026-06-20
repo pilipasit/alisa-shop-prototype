@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аліса — Інтернет-магазин (прототип)</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink-900);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px 20px;text-align:center;
+    background-image:radial-gradient(circle at 18% 18%, rgba(223,3,128,.06), transparent 42%),radial-gradient(circle at 82% 70%, rgba(12,176,227,.06), transparent 42%)}
+  img.logo{height:64px;margin-bottom:6px}
+  .sub{font-weight:700;color:var(--ink-500);font-size:15px;margin:0 0 4px}
+  .meta{font-size:13px;color:var(--ink-400);font-weight:600;margin:0 0 28px}
+  .cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:760px}
+  a.card{text-decoration:none;background:#fff;border:1px solid var(--ink-100);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);padding:24px 22px;width:220px;display:flex;flex-direction:column;align-items:center;gap:10px;
+    transition:transform .15s ease,box-shadow .15s ease}
+  a.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .ic{width:56px;height:56px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff}
+  .t{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink-900)}
+  .d{font-size:13px;color:var(--ink-500);font-weight:600;line-height:1.4}
+</style></head>
+<body>
+  <img class="logo" src="assets/logo-primary.svg" alt="alisa">
+  <p class="sub">Інтернет-магазин — прототип для тестування</p>
+  <p class="meta">Кам’янське · Дніпро · 3 магазини</p>
+  <div class="cards">
+    <a class="card" href="ui_kits/webshop/index.html">
+      <span class="ic" style="background:var(--pink-500)"><i data-lucide="smartphone" style="width:28px;height:28px"></i></span>
+      <span class="t">Мобільна версія</span>
+      <span class="d">Повний прототип на телефоні — головна, каталог, товар, кошик, оформлення</span>
+    </a>
+    <a class="card" href="ui_kits/webshop/desktop.html">
+      <span class="ic" style="background:var(--blue-500)"><i data-lucide="monitor" style="width:28px;height:28px"></i></span>
+      <span class="t">Версія для ПК</span>
+      <span class="d">Та сама вітрина на великому екрані — клікабельна</span>
+    </a>
+    <a class="card" href="ui_kits/webshop/blueprint.html">
+      <span class="ic" style="background:var(--green-500)"><i data-lucide="map" style="width:28px;height:28px"></i></span>
+      <span class="t">План (блупринт)</span>
+      <span class="d">Структура сайту, екрани та план запуску</span>
+    </a>
+  </div>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide&&lucide.createIcons();</script>
+</body></html>

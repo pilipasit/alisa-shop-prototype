@@ -1,0 +1,239 @@
+<!-- @startingPoint section="Webshop" subtitle="Web shop blueprint: sitemap, flows, MVP plan" viewport="900x1200" -->
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аліса — Web shop blueprint</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink-800);line-height:1.6}
+  .wrap{max-width:900px;margin:0 auto;padding:48px 28px 90px}
+  .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:8px}
+  .top img{height:44px}
+  .top .links{display:flex;gap:10px}
+  .top a{font-family:var(--font-display);font-weight:600;font-size:13.5px;text-decoration:none;color:var(--ink-700);background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-pill);padding:8px 15px;display:inline-flex;gap:6px;align-items:center}
+  h1{font-family:var(--font-display);font-weight:700;font-size:42px;letter-spacing:-0.02em;color:var(--ink-900);margin:18px 0 6px}
+  .lede{font-size:17px;color:var(--ink-500);font-weight:600;max-width:680px;margin:0 0 10px}
+  .meta{font-size:13px;color:var(--ink-400);font-weight:700;margin-bottom:6px}
+  h2{font-family:var(--font-display);font-weight:700;font-size:27px;color:var(--ink-900);margin:46px 0 6px;display:flex;align-items:center;gap:11px;scroll-margin-top:20px}
+  h2 .num{width:34px;height:34px;flex:none;background:var(--pink-500);color:#fff;border-radius:var(--radius-pill);font-size:16px;display:flex;align-items:center;justify-content:center}
+  h3{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--ink-900);margin:24px 0 8px}
+  p{margin:0 0 12px}
+  .card{background:#fff;border:1px solid var(--ink-100);border-radius:var(--radius-lg);padding:22px 24px;box-shadow:var(--ring-soft);margin:14px 0}
+  ul{margin:6px 0 14px;padding-left:20px}
+  li{margin-bottom:6px}
+  .pill{display:inline-block;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:var(--radius-pill);margin-right:4px}
+  .p-mvp{background:var(--pink-100);color:var(--pink-600)} .p-2{background:var(--blue-100);color:var(--blue-600)} .p-3{background:var(--ink-100);color:var(--ink-500)}
+  /* sitemap tree */
+  .tree{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  .branch{background:#fff;border-radius:var(--radius-md);border:1px solid var(--ink-100);padding:14px 16px}
+  .branch b{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--ink-900);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .branch b i{color:var(--pink-500)}
+  .branch ul{margin:0;padding-left:16px;font-size:13.5px}
+  .branch li{margin-bottom:4px;color:var(--ink-600);font-weight:600}
+  /* flow */
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 16px}
+  .node{background:var(--pink-100);color:var(--pink-700);font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:var(--radius-pill);white-space:nowrap}
+  .node.alt{background:var(--blue-100);color:var(--blue-600)}
+  .node.end{background:var(--green-100);color:var(--green-600)}
+  .arrow{color:var(--ink-300)}
+  /* copy bank */
+  .copy{display:grid;grid-template-columns:160px 1fr;gap:0;border-top:1px solid var(--ink-100)}
+  .copy>div{padding:11px 14px;border-bottom:1px solid var(--ink-100);font-size:14px}
+  .copy .k{font-weight:800;color:var(--ink-700);background:var(--cream)}
+  .copy .v{color:var(--ink-700)}
+  .copy .v b{color:var(--pink-600)}
+  /* component chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .chip{background:#fff;border:2px solid var(--ink-200);border-radius:var(--radius-pill);padding:7px 13px;font-weight:700;font-size:13px;color:var(--ink-700)}
+  .chip.done{border-color:var(--green-500);color:var(--green-600);background:var(--green-100)}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+  .toc a{font-weight:700;font-size:13px;text-decoration:none;color:var(--ink-600);background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-pill);padding:7px 13px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.two{grid-template-columns:1fr}.copy{grid-template-columns:120px 1fr}}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps li{counter-increment:s;position:relative;padding:14px 0 14px 48px;border-bottom:1px solid var(--ink-100)}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:12px;width:32px;height:32px;background:var(--pink-500);color:#fff;border-radius:var(--radius-pill);font-family:var(--font-display);font-weight:700;display:flex;align-items:center;justify-content:center}
+  .steps li b{color:var(--ink-900)}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="../../assets/logo-primary.svg" alt="alisa">
+    <div class="links">
+      <a href="index.html"><i data-lucide="smartphone" style="width:14px;height:14px"></i>Мобільний прототип</a>
+      <a href="desktop.html"><i data-lucide="monitor" style="width:14px;height:14px"></i>Десктоп</a>
+    </div>
+  </div>
+  <div class="meta">ІНТЕРНЕТ-МАГАЗИН · ДИЗАЙН-БЛУПРИНТ</div>
+  <h1>Web shop blueprint</h1>
+  <p class="lede">A complete, MVP-ready web-shop design for Alisa Kids Store, built on the existing design system. This document is the developer/builder handoff; the mobile prototype and desktop homepage are the visual reference.</p>
+  <div class="toc">
+    <a href="#ia">1 · Sitemap</a><a href="#flows">2 · User flows</a><a href="#components">3 · Components</a>
+    <a href="#copy">4 · UK copy bank</a><a href="#notes">5 · Design notes</a><a href="#mvp">6 · MVP plan</a><a href="#future">7 · Expansion</a>
+  </div>
+
+  <!-- 1 IA -->
+  <h2 id="ia"><span class="num">1</span>Information architecture</h2>
+  <p>21 page types, grouped into five areas. Pink = launch in MVP.</p>
+  <div class="tree">
+    <div class="branch"><b><i data-lucide="home"></i>Головна</b><ul><li><span class="pill p-mvp">MVP</span>Home</li></ul></div>
+    <div class="branch"><b><i data-lucide="layout-grid"></i>Каталог</b><ul>
+      <li><span class="pill p-mvp">MVP</span>Каталог (усі)</li><li><span class="pill p-mvp">MVP</span>Категорія</li>
+      <li><span class="pill p-mvp">MVP</span>Лістинг + фільтри</li><li><span class="pill p-mvp">MVP</span>Картка товару</li>
+      <li>Одяг / Взуття / Іграшки</li><li>Сезонне / Малюкам / Школа</li>
+      <li><span class="pill p-2">v1.1</span>Результати пошуку</li></ul></div>
+    <div class="branch"><b><i data-lucide="shopping-bag"></i>Замовлення</b><ul>
+      <li><span class="pill p-mvp">MVP</span>Кошик / Запит</li><li><span class="pill p-mvp">MVP</span>Оформлення</li>
+      <li><span class="pill p-mvp">MVP</span>Підтвердження</li></ul></div>
+    <div class="branch"><b><i data-lucide="tag"></i>Промо</b><ul>
+      <li><span class="pill p-mvp">MVP</span>Розпродаж</li><li><span class="pill p-2">v1.1</span>Новинки</li>
+      <li><span class="pill p-2">v1.1</span>Останні розміри</li><li><span class="pill p-2">v1.1</span>Сезонні колекції</li>
+      <li><span class="pill p-mvp">MVP</span>Link-in-bio</li></ul></div>
+    <div class="branch"><b><i data-lucide="info"></i>Інформація</b><ul>
+      <li><span class="pill p-mvp">MVP</span>Магазини / контакти</li><li><span class="pill p-2">v1.1</span>Доставка і оплата</li>
+      <li><span class="pill p-2">v1.1</span>Обмін і повернення</li><li><span class="pill p-2">v1.1</span>Таблиця розмірів</li>
+      <li><span class="pill p-3">v1.2</span>Про нас</li><li><span class="pill p-3">v1.2</span>Порожні стани · 404</li></ul></div>
+  </div>
+
+  <!-- 2 FLOWS -->
+  <h2 id="flows"><span class="num">2</span>User flows</h2>
+  <div class="card">
+    <h3 style="margin-top:0">A · Купівля онлайн (semi-manual)</h3>
+    <div class="flow">
+      <span class="node">Головна</span><span class="arrow">→</span><span class="node">Категорія</span><span class="arrow">→</span>
+      <span class="node">Товар</span><span class="arrow">→</span><span class="node">Розмір + кошик</span><span class="arrow">→</span>
+      <span class="node">Кошик</span><span class="arrow">→</span><span class="node">Оформлення</span><span class="arrow">→</span>
+      <span class="node end">Менеджер підтверджує</span>
+    </div>
+    <p style="margin:0;font-size:14px;color:var(--ink-500)">Замовлення — це <b>запит</b>. Жодної онлайн-оплати на старті: магазин телефонує, підтверджує наявність і домовляється про доставку/оплату.</p>
+  </div>
+  <div class="two">
+    <div class="card"><h3 style="margin-top:0">B · Прямий зв’язок</h3>
+      <div class="flow"><span class="node">Товар</span><span class="arrow">→</span><span class="node alt">Direct / Viber / Telegram</span><span class="arrow">→</span><span class="node end">Розмова → продаж</span></div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-500)">Кнопка «Уточнити наявність» завжди поруч із «Додати в кошик».</p>
+    </div>
+    <div class="card"><h3 style="margin-top:0">C · Самовивіз із магазину</h3>
+      <div class="flow"><span class="node">Товар</span><span class="arrow">→</span><span class="node">Наявність A-1/2/3</span><span class="arrow">→</span><span class="node alt">Забронювати</span><span class="arrow">→</span><span class="node end">Забрати в магазині</span></div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-500)">Зв’язок онлайн ↔ офлайн — головна перевага мережі.</p>
+    </div>
+  </div>
+  <div class="card"><h3 style="margin-top:0">D · Соцмережі → магазин</h3>
+    <div class="flow"><span class="node alt">Instagram bio</span><span class="arrow">→</span><span class="node">Link-in-bio</span><span class="arrow">→</span><span class="node">Новинки / Акції / Іграшки</span><span class="arrow">→</span><span class="node end">Товар або Direct</span></div>
+  </div>
+
+  <!-- 3 COMPONENTS -->
+  <h2 id="components"><span class="num">3</span>Component library</h2>
+  <p>Built on the Alisa design system. <span style="color:var(--green-600);font-weight:700">Green = already coded</span> in this prototype (<code>ui.jsx</code> + system bundle).</p>
+  <div class="chips">
+    <span class="chip done">Header (desktop)</span><span class="chip done">Header + app-bar (mobile)</span><span class="chip done">Mobile menu</span>
+    <span class="chip done">Search overlay</span><span class="chip done">Category card</span><span class="chip done">Product card</span>
+    <span class="chip done">Promo banner</span><span class="chip done">Sale / discount badge</span><span class="chip done">Availability badge (A-1/2/3)</span>
+    <span class="chip done">Store dots</span><span class="chip done">Button (system)</span><span class="chip done">Form fields (system)</span>
+    <span class="chip done">Filter chips + drawer</span><span class="chip done">Breadcrumbs</span><span class="chip done">Pagination</span>
+    <span class="chip done">Product carousel</span><span class="chip done">Store card</span><span class="chip done">Notice / alert (system)</span>
+    <span class="chip done">Empty state</span><span class="chip done">Checkout stepper</span><span class="chip done">Bottom nav</span>
+    <span class="chip done">Price + old price</span><span class="chip done">Quantity stepper</span><span class="chip done">DM contact sheet</span>
+    <span class="chip done">Footer</span><span class="chip done">Size guide table</span>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Product card — the workhorse</h3>
+    <p style="margin-bottom:6px">One card serves clothing & toys. Contains:</p>
+    <ul style="margin:0">
+      <li>Photo (color-tinted placeholder by category until real photos exist)</li>
+      <li>Badge: <b>Акція / Новинка / Останній розмір / Хіт</b> + auto <b>−XX%</b></li>
+      <li>Name · article (Арт.) · age/size range</li>
+      <li>Price + struck old price · status (В наявності / Останній розмір / Немає)</li>
+      <li>Store dots A-1 · A-2 · A-3 (green = є, yellow = останній, gray = немає)</li>
+      <li>Actions: «Детальніше» + quick «У кошик»</li>
+    </ul>
+  </div>
+
+  <!-- 4 COPY -->
+  <h2 id="copy"><span class="num">4</span>Ukrainian copy bank</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="copy">
+      <div class="k">Hero</div><div class="v"><b>Тепло для найменших</b> · Знижки до 50% на зимовий одяг та взуття у магазинах «Аліса».</div>
+      <div class="k">Категорія</div><div class="v">Зручний та якісний одяг для дітей від народження до 12 років.</div>
+      <div class="k">Банер акції</div><div class="v"><b>Зимовий розпродаж — знижки до 50%.</b> Звільняємо місце для нового сезону.</div>
+      <div class="k">Бейджі</div><div class="v">Акція · Новинка · Останній розмір · Хіт · −30%</div>
+      <div class="k">Наявність</div><div class="v">В наявності · Останній розмір · Немає в наявності</div>
+      <div class="k">Порожній стан</div><div class="v"><b>Нічого не знайшли.</b> Спробуйте змінити фільтри або напишіть нам — допоможемо підібрати.</div>
+      <div class="k">Кошик</div><div class="v">Менеджер підтвердить наявність та розмір після замовлення.</div>
+      <div class="k">Checkout</div><div class="v">Це попереднє замовлення. Менеджер зв’яжеться з вами найближчим часом.</div>
+      <div class="k">Самовивіз</div><div class="v">Можна забрати у магазині А-1, А-2 або А-3 — безкоштовно.</div>
+      <div class="k">Доставка</div><div class="v">Доставка Новою поштою по всій Україні. 1–3 дні.</div>
+      <div class="k">Оплата</div><div class="v">Оплата при отриманні (готівка або картка). Картка онлайн — скоро.</div>
+      <div class="k">Підтвердження</div><div class="v"><b>Замовлення прийнято!</b> Менеджер зателефонує, щоб підтвердити деталі.</div>
+      <div class="k">Обмін</div><div class="v">Обмін та повернення — протягом 14 днів із чеком.</div>
+      <div class="k">Контакти</div><div class="v">Напишіть нам у Direct, Viber чи Telegram — відповідаємо щодня 9:00–21:00.</div>
+      <div class="k">Помилка / 404</div><div class="v">Ой! Такої сторінки немає. Повернутись на головну чи переглянути каталог?</div>
+    </div>
+  </div>
+  <p style="font-size:14px;color:var(--ink-500)"><b>Tone:</b> warm, simple, helpful, trustworthy, parent-friendly. Address the customer as «ви». Sentence case; ALL-CAPS only for one promo word. One friendly emoji max in social copy.</p>
+
+  <!-- 5 NOTES -->
+  <h2 id="notes"><span class="num">5</span>Design notes</h2>
+  <div class="two">
+    <div class="card"><h3 style="margin-top:0">Brand application</h3><ul style="margin:0">
+      <li>Official multicolor logo in header & footer</li>
+      <li><b>Pink</b> = CTA, sale, brand highlights</li>
+      <li><b>Blue</b> = одяг · <b>Green</b> = іграшки · <b>Yellow</b> = сезонне · <b>Pink</b> = розпродаж</li>
+      <li>Color-code categories everywhere — customers navigate by color</li>
+    </ul></div>
+    <div class="card"><h3 style="margin-top:0">Mobile-first rules</h3><ul style="margin:0">
+      <li>Big readable product photos</li>
+      <li>Filters in a bottom/side drawer, chips</li>
+      <li>Sticky bottom nav + cart count</li>
+      <li>Fast contact buttons (Direct/Viber/Telegram)</li>
+      <li>≥44px touch targets, body text ≥16px</li>
+    </ul></div>
+  </div>
+  <div class="card"><h3 style="margin-top:0">Semi-manual sales model (important)</h3>
+    <p style="margin:0">The business has limited management capacity and no real-time stock sync. The whole design treats an order as a <b>request the store confirms</b> — clearly messaged at cart, checkout and confirmation. This avoids overselling frozen inventory and lets Alisa launch without warehouse integration. Online card payment is shown as “скоро”.</p>
+  </div>
+  <div class="card"><h3 style="margin-top:0">Photos & assets</h3>
+    <p style="margin:0">Product images are on-brand color-tinted placeholders by category. Replace with real photography on a clean light background (vertical/square preferred). Everything else — logo, colors, type (Fredoka + Nunito), icons (Lucide) — comes from the design system.</p>
+  </div>
+
+  <!-- 6 MVP -->
+  <h2 id="mvp"><span class="num">6</span>MVP launch plan</h2>
+  <p>Launch a <b>simple catalog + order-request shop</b>, not a marketplace. Ship these eight, in order:</p>
+  <ol class="steps">
+    <li><b>Головна</b> — hero, categories, popular/sale/new, store reminder, benefits.</li>
+    <li><b>Каталог + категорії</b> — grid, sort, basic filters (category, price, sale, store).</li>
+    <li><b>Лістинг товарів</b> — the product card + pagination.</li>
+    <li><b>Картка товару</b> — gallery, size, store availability, «Додати в кошик» + Direct.</li>
+    <li><b>Кошик / форма замовлення</b> — items + contact form; “менеджер підтвердить”.</li>
+    <li><b>Магазини / контакти</b> — 3 store cards, map, hours, phones.</li>
+    <li><b>Розпродаж</b> — move slow inventory: price buckets + last sizes.</li>
+    <li><b>Link-in-bio лендинг</b> — turn Instagram traffic into orders/visits.</li>
+  </ol>
+  <p style="font-size:14px;color:var(--ink-500)"><b>Not in MVP:</b> online card payment, accounts/login, wishlists, real-time stock, reviews, multi-warehouse logic, full search.</p>
+
+  <!-- 7 FUTURE -->
+  <h2 id="future"><span class="num">7</span>Future expansion</h2>
+  <div class="two">
+    <div class="card"><h3 style="margin-top:0">Phase 2 — v1.1</h3><ul style="margin:0">
+      <li>Full search + dedicated results page</li>
+      <li>New arrivals & seasonal collection pages</li>
+      <li>Delivery/payment, returns, size-guide info pages</li>
+      <li>Online card payment (LiqPay / Mono)</li>
+      <li>Simple stock flags per store from a spreadsheet/POS export</li>
+    </ul></div>
+    <div class="card"><h3 style="margin-top:0">Phase 3 — v1.2+</h3><ul style="margin:0">
+      <li>Customer accounts & order history</li>
+      <li>Wishlists / “save for later”</li>
+      <li>Reviews & ratings</li>
+      <li>Loyalty / promo codes</li>
+      <li>Real-time inventory sync with POS</li>
+      <li>Email/SMS order status</li>
+    </ul></div>
+  </div>
+  <div class="card" style="background:var(--pink-100);border-color:var(--pink-200)">
+    <p style="margin:0;font-weight:700;color:var(--pink-700)">Principle: keep it operable by a small family team. Add complexity only when sales volume justifies the extra work.</p>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide&&lucide.createIcons();</script>
+</body></html>

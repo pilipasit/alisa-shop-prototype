@@ -1,0 +1,73 @@
+<!-- @dsCard group="Webshop" viewport="430x720" name="Web shop — mobile prototype" subtitle="Clickable MVP: home → catalog → product → cart → checkout" -->
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аліса — Інтернет-магазин (мобільний прототип)</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-body);background:#e9e4e7;color:var(--ink-900);
+    background-image:radial-gradient(circle at 20% 20%, rgba(223,3,128,.05), transparent 40%),radial-gradient(circle at 80% 60%, rgba(12,176,227,.05), transparent 40%)}
+  .stagewrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 16px 40px}
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+  .toolbar a{font-family:var(--font-display);font-weight:600;font-size:14px;text-decoration:none;color:var(--ink-700);background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-pill);padding:9px 16px;display:inline-flex;gap:7px;align-items:center;box-shadow:var(--ring-soft)}
+  .toolbar a.primary{background:var(--pink-500);color:#fff;border-color:var(--pink-500)}
+  .toolbar .lbl{font-weight:700;font-size:12px;color:var(--ink-400);text-transform:uppercase;letter-spacing:.05em}
+
+  /* phone device */
+  .phone{width:390px;height:780px;max-height:calc(100vh - 130px);background:var(--cream);border-radius:42px;
+    box-shadow:0 0 0 11px #1c1116, 0 0 0 13px #34232c, var(--shadow-xl);
+    position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .statusbar{height:38px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:800;font-size:14px;color:var(--ink-900);background:var(--cream)}
+  .appbar{flex:none;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;background:#fff;border-bottom:1px solid var(--ink-100);position:relative;z-index:5}
+  .appscroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 86px;-webkit-overflow-scrolling:touch}
+  .appscroll::-webkit-scrollbar{width:0}
+  .cartdot{position:absolute;top:4px;right:4px;min-width:17px;height:17px;padding:0 4px;background:var(--pink-600);color:#fff;border-radius:99px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+
+  .bottomnav{flex:none;height:66px;display:flex;background:#fff;border-top:1px solid var(--ink-100);position:absolute;bottom:0;left:0;right:0;z-index:6}
+  .navbtn{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--ink-400);font-family:var(--font-body);font-weight:700;font-size:10.5px;padding-bottom:6px}
+  .navbtn.on{color:var(--pink-600)}
+  .navbtn .navdot{position:absolute;top:-4px;right:-8px;min-width:15px;height:15px;padding:0 3px;background:var(--pink-600);color:#fff;border-radius:99px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff}
+
+  .toast{position:absolute;left:16px;right:16px;bottom:80px;z-index:30;background:var(--ink-900);color:#fff;border-radius:var(--radius-pill);padding:12px 18px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow-lg);animation:pop .25s ease}
+  @keyframes pop{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+  /* overlays */
+  .ovl{position:absolute;inset:0;z-index:40;background:rgba(46,26,38,.42);display:flex}
+  .sheet{background:#fff;overflow-y:auto;padding:20px;animation:slide .26s ease}
+  .sheet.bottom{margin-top:auto;width:100%;max-height:82%;border-radius:24px 24px 0 0}
+  .sheet.right{margin-left:auto;width:86%;height:100%;animation:slideR .26s ease}
+  .sheet.left{width:84%;height:100%;animation:slideL .26s ease}
+  .ovl-full{position:absolute;inset:0;z-index:45;background:#fff;display:flex;flex-direction:column}
+  @keyframes slide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes slideR{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  @keyframes slideL{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+
+  select{outline:none}
+  @media (max-width:460px){ .stagewrap{padding:0} .phone{width:100vw;height:100vh;max-height:100vh;border-radius:0;box-shadow:none} }
+</style></head>
+<body>
+<div class="stagewrap">
+  <div class="toolbar">
+    <span class="lbl">Аліса · інтернет-магазин</span>
+    <a href="desktop.html"><i data-lucide="monitor" style="width:15px;height:15px"></i>Десктоп</a>
+    <a href="blueprint.html"><i data-lucide="map" style="width:15px;height:15px"></i>Блупринт + MVP</a>
+  </div>
+  <div id="app"></div>
+</div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#df0380"/><rect x="34" y="22" width="32" height="56" rx="7" fill="#fff"/><circle cx="50" cy="70" r="3" fill="#df0380"/></svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react" src="data.jsx"></script>
+<script type="text/babel" data-presets="react" src="ui.jsx"></script>
+<script type="text/babel" data-presets="react" src="screens1.jsx"></script>
+<script type="text/babel" data-presets="react" src="screens2.jsx"></script>
+<script type="text/babel" data-presets="react" src="app.jsx"></script>
+<script>setTimeout(()=>window.lucide&&window.lucide.createIcons(),400);</script>
+</body></html>

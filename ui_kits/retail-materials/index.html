@@ -1,0 +1,90 @@
+<!-- @dsCard group="Retail Materials" viewport="1180x760" name="Retail Materials Kit" subtitle="Promo poster, shelf labels, category signs & store notice" -->
+<!DOCTYPE html><html lang="uk"><head><meta charset="utf8"><title>Alisa — Retail Materials</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink-900)}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 36px 64px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .top img{height:40px}
+  .lede{font-size:15px;color:var(--ink-500);max-width:620px;margin:0 0 28px}
+  .h{font-family:var(--font-display);font-weight:600;font-size:22px;margin:34px 0 16px;color:var(--ink-900)}
+  .board{display:grid;grid-template-columns:600px 1fr;gap:32px;align-items:start}
+  .stack{display:flex;flex-direction:column;gap:18px}
+  .labels{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .signs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .seasonbar{display:flex;gap:10px;margin-bottom:18px}
+  .pill{font-family:var(--font-body);font-weight:700;font-size:14px;padding:9px 18px;border-radius:var(--radius-pill);border:2px solid var(--ink-200);background:#fff;color:var(--ink-700);cursor:pointer}
+  .pill.on{background:var(--pink-500);border-color:var(--pink-500);color:#fff}
+</style></head><body>
+<div class="wrap">
+  <div class="top">
+    <img src="../../assets/logo-primary.svg" alt="alisa">
+    <span style="font-weight:700;color:var(--ink-400);font-size:13px;text-transform:uppercase;letter-spacing:.05em">Матеріали для магазину</span>
+  </div>
+  <p class="lede">Готові офлайн-матеріали: акційний постер, цінники на полицю, вивіски категорій та оголошення для покупців — усі зібрані з компонентів дизайн-системи.</p>
+
+  <div class="seasonbar" id="seasons">
+    <button class="pill on" data-s="winter">Зима</button>
+    <button class="pill" data-s="spring">Весна</button>
+    <button class="pill" data-s="summer">Літо</button>
+  </div>
+
+  <div class="board">
+    <div id="poster"></div>
+    <div class="stack">
+      <div>
+        <p class="h" style="margin-top:0">Цінники на полицю</p>
+        <div class="labels" id="labels"></div>
+      </div>
+      <div>
+        <p class="h">Вивіски категорій</p>
+        <div class="signs" id="signs"></div>
+      </div>
+      <div>
+        <p class="h">Оголошення</p>
+        <div id="notice"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react" src="PromoPoster.jsx"></script>
+<script type="text/babel" data-presets="react" src="ShelfLabel.jsx"></script>
+<script type="text/babel" data-presets="react">
+const { CategorySign, Notice } = window.AlisaKidsStoreDesignSystem_194dcf;
+const I = (n) => <i data-lucide={n}></i>;
+const posterRoot = ReactDOM.createRoot(document.getElementById('poster'));
+function renderPoster(season){ posterRoot.render(<PromoPoster season={season} />); setTimeout(()=>window.lucide&&window.lucide.createIcons(),40); }
+renderPoster('winter');
+
+document.getElementById('seasons').addEventListener('click', (e)=>{
+  const b = e.target.closest('.pill'); if(!b) return;
+  [...document.querySelectorAll('#seasons .pill')].forEach(p=>p.classList.toggle('on', p===b));
+  renderPoster(b.dataset.s);
+});
+
+ReactDOM.createRoot(document.getElementById('labels')).render(<>
+  <ShelfLabel name="Комбінезон зимовий" sku="104223" price="649" oldPrice="999" accent="blue" />
+  <ShelfLabel name="Набір кубиків" sku="220871" price="199" accent="green" />
+  <ShelfLabel name="Шапка з помпоном" sku="118540" price="149" oldPrice="229" accent="pink" />
+  <ShelfLabel name="Гумові чоботи" sku="305112" price="299" accent="yellow" />
+</>);
+
+ReactDOM.createRoot(document.getElementById('signs')).render(<>
+  <CategorySign title="Одяг" subtitle="0–12 років" color="blue" icon={I('shirt')} />
+  <CategorySign title="Іграшки" color="green" icon={I('blocks')} />
+  <CategorySign title="Взуття" color="pink" icon={I('footprints')} />
+  <CategorySign title="Сезон" subtitle="новинки" color="yellow" icon={I('sun')} />
+</>);
+
+ReactDOM.createRoot(document.getElementById('notice')).render(
+  <Notice tone="info" title="Графік роботи">Щодня з 9:00 до 21:00. Обмін та повернення — протягом 14 днів із чеком.</Notice>
+);
+setTimeout(()=>window.lucide&&window.lucide.createIcons(),120);
+</script>
+</body></html>

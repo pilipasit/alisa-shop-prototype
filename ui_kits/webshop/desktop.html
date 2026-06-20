@@ -1,0 +1,33 @@
+<!-- @dsCard group="Webshop" viewport="1200x800" name="Web shop — desktop homepage" subtitle="Full homepage: header, hero, categories, carousels, footer" -->
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аліса — Інтернет-магазин (десктоп)</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink-900)}
+  a{text-decoration:none}
+  input{outline:none}
+  .backbar{position:fixed;left:16px;bottom:16px;z-index:50}
+  .backbar a{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-display);font-weight:600;font-size:14px;background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-pill);padding:10px 18px;color:var(--ink-700);box-shadow:var(--shadow-md)}
+</style></head>
+<body>
+<div id="app"></div>
+<div class="backbar"><a href="index.html"><i data-lucide="smartphone" style="width:15px;height:15px"></i>Мобільний прототип</a></div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#df0380"/><rect x="18" y="26" width="64" height="48" rx="6" fill="#fff"/><rect x="18" y="26" width="64" height="11" rx="6" fill="#0cb0e3"/></svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react" src="data.jsx"></script>
+<script type="text/babel" data-presets="react" src="ui.jsx"></script>
+<script type="text/babel" data-presets="react" src="screens1.jsx"></script>
+<script type="text/babel" data-presets="react" src="screens2.jsx"></script>
+<script type="text/babel" data-presets="react" src="desktop.jsx"></script>
+<script>setTimeout(()=>window.lucide&&window.lucide.createIcons(),400);</script>
+</body></html>

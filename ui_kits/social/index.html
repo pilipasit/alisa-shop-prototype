@@ -1,0 +1,37 @@
+<!-- @dsCard group="Social" viewport="1180x560" name="Social Posts" subtitle="Square Instagram / Facebook posts — sale, arrivals, announcement" -->
+<!DOCTYPE html><html lang="uk"><head><meta charset="utf8"><title>Alisa — Social</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body{margin:0;font-family:var(--font-body);background:var(--cream);color:var(--ink-900)}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .top img{height:38px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
+  .item{display:flex;flex-direction:column;gap:10px}
+  .post{width:454px;height:454px;overflow:hidden}
+  .cap{font-weight:700;font-size:13px;color:var(--ink-500);text-transform:uppercase;letter-spacing:.04em}
+</style></head><body>
+<div class="wrap">
+  <div class="top">
+    <img src="../../assets/logo-primary.svg" alt="alisa">
+    <span class="cap">Соцмережі · 1080×1080</span>
+  </div>
+  <div class="grid">
+    <div class="item"><div class="post" id="p1"></div><span class="cap">Розпродаж</span></div>
+    <div class="item"><div class="post" id="p2"></div><span class="cap">Новинки</span></div>
+    <div class="item"><div class="post" id="p3"></div><span class="cap">Оголошення</span></div>
+  </div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script type="text/babel" data-presets="react" src="SocialPost.jsx"></script>
+<script type="text/babel" data-presets="react">
+ReactDOM.createRoot(document.getElementById('p1')).render(<SocialPost kind="sale" scale={0.42} />);
+ReactDOM.createRoot(document.getElementById('p2')).render(<SocialPost kind="arrival" scale={0.42} />);
+ReactDOM.createRoot(document.getElementById('p3')).render(<SocialPost kind="announce" scale={0.42} />);
+setTimeout(()=>window.lucide&&window.lucide.createIcons(),120);
+</script>
+</body></html>
