@@ -84,9 +84,9 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
           <span style={{ fontSize:12, fontWeight:800, color:statusColor }}>{statusLabel}</span>
           <StoreDots av={p.av} compact />
         </div>
-        <div style={{ marginTop:'auto', display:'flex', gap:8 }}>
-          <Button variant="secondary" size="sm" onClick={onOpen} fullWidth>Детальніше</Button>
-          {anyIn || anyLast ? <IconButton aria-label="У кошик" variant="solid" size="sm" onClick={onAdd}>{Icon('shopping-bag')}</IconButton> : null}
+        <div style={{ marginTop:'auto', display:'flex', gap:8, alignItems:'stretch' }}>
+          <Button variant="secondary" size="sm" onClick={onOpen} style={{ flex:'1 1 auto', minWidth:0 }}>Детальніше</Button>
+          {anyIn || anyLast ? <span style={{ flex:'0 0 auto', display:'inline-flex' }}><IconButton aria-label="Додати в кошик" variant="solid" size="sm" onClick={onAdd}>{Icon('shopping-bag')}</IconButton></span> : null}
         </div>
       </div>
     </div>
