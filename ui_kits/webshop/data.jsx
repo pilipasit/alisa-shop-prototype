@@ -50,6 +50,69 @@ const PRODUCTS = [
   P('401501', 'Костюм «Зебра»: футболка + спідниця','clothing',499,649,'98–128','sale', { 'A-1':'in','A-2':'in','A-3':'in' },   true,  IMG('zebra-set.jpg')),
 ];
 
+/* --- filterable attributes: age [minYears,maxYears], g = gender (g/b/u), season --- */
+const ATTRS = {
+  '104223': { age:[1,5],  g:'u', season:'winter' },  '118540': { age:[1,4],  g:'u', season:'winter' },
+  '401290': { age:[2,7],  g:'g', season:'all'    },  '132201': { age:[3,8],  g:'u', season:'demi'   },
+  '309845': { age:[4,8],  g:'u', season:'demi'   },  '305112': { age:[2,6],  g:'u', season:'demi'   },
+  '311777': { age:[4,9],  g:'u', season:'demi'   },  '220871': { age:[1,5],  g:'u', season:'all'    },
+  '221054': { age:[4,8],  g:'u', season:'all'    },  '223410': { age:[0,12], g:'u', season:'all'    },
+  '224901': { age:[5,10], g:'u', season:'all'    },  '601233': { age:[1,6],  g:'u', season:'summer' },
+  '602810': { age:[2,7],  g:'g', season:'summer' },  '502118': { age:[6,12], g:'u', season:'all'    },
+  '503277': { age:[6,12], g:'u', season:'all'    },  '701055': { age:[0,1],  g:'u', season:'all'    },
+  '801001': { age:[3,8],  g:'u', season:'summer' },  '801002': { age:[1,3],  g:'b', season:'summer' },
+  '802001': { age:[3,10], g:'u', season:'summer' },  '802002': { age:[1,5],  g:'u', season:'all'    },
+  '401501': { age:[3,8],  g:'g', season:'summer' },
+};
+PRODUCTS.forEach(p => Object.assign(p, ATTRS[p.id] || { age:[0,12], g:'u', season:'all' }));
+
+const AGE_BUCKETS = { '0–2':[0,2], '3–5':[3,5], '6–9':[6,9], '10–12':[10,12] };
+const SEASON_MAP  = { 'Літо':'summer', 'Зима':'winter', 'Демісезон':'demi' };
+const GENDER_MAP  = { 'Дівчатам':'g', 'Хлопцям':'b', 'Унісекс':'u' };
+
+/* cm height range — only clothing-style products carry one, so a size filter excludes toys */
+const heightRange = (p) => {
+  if (['clothing','seasonal','baby'].indexOf(p.cat) < 0) return null;
+  const m = /^(\d{2,3})–(\d{2,3})$/.exec(p.ages || '');
+  return m ? [ +m[1], +m[2] ] : null;
+};
+const hasLast = (p) => p.badge === 'last' || Object.keys(p.av).some(k => p.av[k] === 'last');
+
+/* single source of truth for filtering — shared by mobile + desktop */
+function applyFilters(list, f) {
+  if (!f) return list;
+  return list.filter(p => {
+    if (f.cat === 'sale') { if (!p.oldPrice) return false; }
+    else if (f.cat && p.cat !== f.cat) return false;
+    if (f.filter === 'new' && p.badge !== 'new') return false;
+    if (f.age)  { const b = AGE_BUCKETS[f.age]; if (!b || p.age[1] < b[0] || p.age[0] > b[1]) return false; }
+    if (f.size) { const r = heightRange(p), s = +f.size; if (!r || s < r[0] || s > r[1]) return false; }
+    if (f.gender) { const g = GENDER_MAP[f.gender];
+      if (g === 'u' ? p.g !== 'u' : (p.g !== g && p.g !== 'u')) return false; }
+    if (f.season) { const s = SEASON_MAP[f.season]; if (p.season !== 'all' && p.season !== s) return false; }
+    if (f.store && (p.av[f.store] || 'out') === 'out') return false;
+    if (f.sale && !p.oldPrice) return false;
+    if (f.new  && p.badge !== 'new') return false;
+    if (f.last && !hasLast(p)) return false;
+    return true;
+  });
+}
+
+/* removable labels for the filters that aren't already shown in the page title */
+function filterChips(f) {
+  if (!f) return [];
+  const out = [];
+  if (f.age)    out.push({ k:'age',    label: f.age + ' р' });
+  if (f.size)   out.push({ k:'size',   label: 'зріст ' + f.size });
+  if (f.gender) out.push({ k:'gender', label: f.gender });
+  if (f.season) out.push({ k:'season', label: f.season });
+  if (f.store)  out.push({ k:'store',  label: 'є у ' + f.store });
+  if (f.sale)   out.push({ k:'sale',   label: 'зі знижкою' });
+  if (f.new)    out.push({ k:'new',    label: 'новинки' });
+  if (f.last)   out.push({ k:'last',   label: 'останні розміри' });
+  return out;
+}
+
 // price buckets for sale page
 const BUCKETS = [
   { uk: 'до 199 ₴', max: 199, color: 'green' },
@@ -67,6 +130,7 @@ const AV_LABEL = {
 };
 
 window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
+  AGE_BUCKETS, applyFilters, filterChips, heightRange,
   catById: (id) => CATS.find(c => c.id === id),
   byId: (id) => PRODUCTS.find(p => p.id === id),
   inCat: (id) => PRODUCTS.filter(p => p.cat === id),

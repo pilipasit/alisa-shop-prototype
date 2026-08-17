@@ -102,7 +102,7 @@ function App() {
 
       {toast && <div className="toast"><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
 
-      {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
+      {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} initial={cur.r==='catalog'?cur.p:null} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
       {overlay==='dm' && <DMSheet onClose={()=>setOverlay(null)} />}
       {overlay==='search' && <SearchOverlay onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} addToCart={addToCart} />}
       {overlay==='menu' && <MenuDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);tabNav(r==='catalog'?'catalog':r);if(p)setStack([{r,p}]);}} />}
@@ -119,8 +119,9 @@ function Sheet({ children, onClose, side }) {
   );
 }
 
-function FiltersDrawer({ onClose, nav }) {
-  const [sel, setSel] = React.useState({ cat:null, age:null, store:null, sale:false });
+function FiltersDrawer({ onClose, nav, initial }) {
+  const [sel, setSel] = React.useState(initial || {});
+  const matchCount = Sd.applyFilters(Sd.PRODUCTS, sel).length;
   const t = (k,v)=> setSel(s=>({ ...s, [k]: s[k]===v?null:v }));
   const Chip = Ud.FilterChip;
   const grp = (title, children)=> <div style={{marginBottom:18}}><div style={{fontWeight:800,fontSize:13,color:'var(--ink-900)',marginBottom:8}}>{title}</div><div style={{display:'flex',flexWrap:'wrap',gap:8}}>{children}</div></div>;
@@ -139,7 +140,10 @@ function FiltersDrawer({ onClose, nav }) {
       {grp('Особливе', [['Зі знижкою','sale'],['Новинки','new'],['Останні розміри','last']].map(o=> <Chip key={o[1]} label={o[0]} color="pink" active={sel[o[1]]} onClick={()=>setSel(x=>({...x,[o[1]]:!x[o[1]]}))} />))}
       <div style={{ display:'flex', gap:10, position:'sticky', bottom:0, background:'#fff', paddingTop:10 }}>
         <AB variant="ghost" onClick={()=>setSel({})}>Скинути</AB>
-        <AB variant="primary" size="lg" fullWidth onClick={()=>nav('catalog', sel.cat?{cat:sel.cat}:{})}>Показати товари</AB>
+        <AB variant="primary" size="lg" fullWidth disabled={matchCount===0}
+          onClick={()=>nav('catalog', sel)}>
+          {matchCount===0 ? 'Немає товарів' : `Показати товари (${matchCount})`}
+        </AB>
       </div>
     </Sheet>
   );

@@ -210,26 +210,35 @@ function Sheet({ children, onClose, side, wide }) {
   );
 }
 
-function FiltersDrawer({ onClose, nav }) {
-  const [sel, setSel] = React.useState({ cat:null });
+function FiltersDrawer({ onClose, nav, initial }) {
+  const [sel, setSel] = React.useState(initial || {});
   const t = (k,v)=> setSel(s=>({ ...s, [k]: s[k]===v?null:v }));
+  const tog = (k)=> setSel(s=>({ ...s, [k]: !s[k] }));
+  const matchCount = S.applyFilters(S.PRODUCTS, sel).length;
+  const grp = (title, children)=> (
+    <div style={{ marginBottom:18 }}>
+      <div style={{ fontWeight:800, fontSize:13, color:'var(--ink-900)', marginBottom:8 }}>{title}</div>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>{children}</div>
+    </div>
+  );
   return (
     <Sheet onClose={onClose} side="right">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <span style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20 }}>Фільтри</span>
         <IconButton aria-label="Закрити" variant="ghost" onClick={onClose}>{I('x')}</IconButton>
       </div>
-      <div style={{ fontWeight:800, fontSize:13, color:'var(--ink-900)', marginBottom:8 }}>Категорія</div>
-      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:18 }}>
-        {S.CATS.filter(c=>c.id!=='sale').map(c=> <FilterChip key={c.id} label={c.uk} color={c.color} active={sel.cat===c.id} onClick={()=>t('cat',c.id)} />)}
-      </div>
-      <div style={{ fontWeight:800, fontSize:13, color:'var(--ink-900)', marginBottom:8 }}>Особливе</div>
-      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:18 }}>
-        {[['Зі знижкою','sale'],['Новинки','new']].map(o=> <FilterChip key={o[1]} label={o[0]} color="pink" active={sel[o[1]]} onClick={()=>setSel(x=>({...x,[o[1]]:!x[o[1]]}))} />)}
-      </div>
-      <div style={{ display:'flex', gap:10 }}>
+      {grp('Категорія', S.CATS.filter(c=>c.id!=='sale').map(c=> <FilterChip key={c.id} label={c.uk} color={c.color} active={sel.cat===c.id} onClick={()=>t('cat',c.id)} />))}
+      {grp('Вік', Object.keys(S.AGE_BUCKETS).map(a=> <FilterChip key={a} label={a+' р'} active={sel.age===a} onClick={()=>t('age',a)} />))}
+      {grp('Розмір (зріст)', S.SIZES_CLOTHING.map(s=> <FilterChip key={s} label={s} active={sel.size===s} onClick={()=>t('size',s)} />))}
+      {grp('Стать', ['Дівчатам','Хлопцям','Унісекс'].map(g=> <FilterChip key={g} label={g} active={sel.gender===g} onClick={()=>t('gender',g)} />))}
+      {grp('Сезон', ['Літо','Зима','Демісезон'].map(s=> <FilterChip key={s} label={s} active={sel.season===s} onClick={()=>t('season',s)} />))}
+      {grp('Наявність у магазині', S.STORES.map(s=> <FilterChip key={s.id} label={s.id} active={sel.store===s.id} onClick={()=>t('store',s.id)} />))}
+      {grp('Особливе', [['Зі знижкою','sale'],['Новинки','new'],['Останні розміри','last']].map(o=> <FilterChip key={o[1]} label={o[0]} color="pink" active={!!sel[o[1]]} onClick={()=>tog(o[1])} />))}
+      <div style={{ display:'flex', gap:10, position:'sticky', bottom:0, background:'#fff', paddingTop:10 }}>
         <Button variant="ghost" onClick={()=>setSel({})}>Скинути</Button>
-        <Button variant="primary" size="lg" fullWidth onClick={()=>nav('catalog', sel.cat?{cat:sel.cat}:(sel.sale?{cat:'sale'}:sel.new?{filter:'new'}:{}))}>Показати товари</Button>
+        <Button variant="primary" size="lg" fullWidth disabled={matchCount===0} onClick={()=>nav('catalog', sel)}>
+          {matchCount===0 ? 'Немає товарів' : `Показати товари (${matchCount})`}
+        </Button>
       </div>
     </Sheet>
   );
@@ -337,7 +346,7 @@ function DesktopApp() {
 
       {toast && <div style={{ position:'fixed', left:'50%', transform:'translateX(-50%)', bottom:28, zIndex:70, background:'var(--ink-900)', color:'#fff', borderRadius:'var(--radius-pill)', padding:'12px 20px', fontWeight:700, fontSize:14, display:'flex', alignItems:'center', gap:9, boxShadow:'var(--shadow-lg)' }}><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
 
-      {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
+      {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} initial={cur.r==='catalog'?cur.p:null} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
       {overlay==='search' && <SearchOverlay onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} addToCart={addToCart} />}
       {overlay==='dm' && <DMSheet onClose={()=>setOverlay(null)} />}
     </div>

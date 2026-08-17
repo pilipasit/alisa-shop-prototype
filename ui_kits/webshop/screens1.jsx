@@ -89,9 +89,8 @@ function HomeScreen({ nav, addToCart }) {
 /* ---------------- CATALOG / LISTING ---------------- */
 function CatalogScreen({ nav, addToCart, params, openFilters }) {
   const cat = params.cat ? S.catById(params.cat) : null;
-  let list = cat ? S.inCat(cat.id) : (params.cat==='sale' ? S.onSale() : S.PRODUCTS);
-  if (params.cat === 'sale') list = S.onSale();
-  if (params.filter === 'new') list = S.isNew();
+  const list = S.applyFilters(S.PRODUCTS, params);
+  const chips = S.filterChips(params);
   const [sort, setSort] = React.useState('pop');
   const sorted = [...list].sort((a,b)=>{
     if(sort==='new') return (b.badge==='new')-(a.badge==='new');
@@ -118,6 +117,24 @@ function CatalogScreen({ nav, addToCart, params, openFilters }) {
           <i data-lucide="chevron-down" style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', width:16, height:16, color:'var(--ink-400)', pointerEvents:'none' }}></i>
         </div>
       </div>
+
+      {/* active filters — removable */}
+      {chips.length > 0 && (
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center', marginBottom:14 }}>
+          {chips.map(c=>(
+            <button key={c.k} onClick={()=>nav('catalog', { ...params, [c.k]: undefined })}
+              style={{ display:'inline-flex', alignItems:'center', gap:6, fontFamily:'var(--font-body)', fontWeight:700, fontSize:13,
+                padding:'7px 12px', borderRadius:'var(--radius-pill)', cursor:'pointer',
+                border:'2px solid var(--pink-500)', background:'var(--pink-100)', color:'var(--pink-600)' }}>
+              {c.label} <span aria-hidden="true">✕</span>
+              <span style={{ position:'absolute', width:1, height:1, overflow:'hidden', clip:'rect(0 0 0 0)' }}>Прибрати фільтр</span>
+            </button>
+          ))}
+          <button onClick={()=>nav('catalog', params.cat ? { cat: params.cat } : {})}
+            style={{ background:'none', border:0, fontFamily:'var(--font-body)', fontWeight:700, fontSize:13,
+              color:'var(--ink-500)', cursor:'pointer', textDecoration:'underline' }}>Скинути все</button>
+        </div>
+      )}
 
       <PromoBanner color="pinkDeep" kicker="Тільки до неділі" title="Розпродаж −50%" cta="Дивитися" onClick={()=>nav('sale')} />
       <div style={{ height:16 }}></div>
