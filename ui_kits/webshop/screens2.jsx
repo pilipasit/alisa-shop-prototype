@@ -64,13 +64,68 @@ function Row({ k, v, big, accent }) {
 }
 
 /* ---------------- CHECKOUT ---------------- */
+const PHONE_HINT = 'Наприклад: +380 98 822 29 64';
+
+/* Ukrainian numbers → canonical 0XXXXXXXXX form ('' if unusable) */
+function normalizePhone(v) {
+  const d = String(v || '').replace(/\D/g, '');
+  if (d.length === 12 && d.slice(0,3) === '380') return '0' + d.slice(3);
+  if (d.length === 11 && d.slice(0,2) === '80')  return '0' + d.slice(2);
+  if (d.length === 10 && d[0] === '0')           return d;
+  if (d.length === 9)                            return '0' + d;   // typed without the leading 0
+  return d;
+}
+
+const VALIDATORS = {
+  name: (v) => {
+    const t = String(v || '').trim();
+    if (!t) return 'Вкажіть ім’я — менеджер знатиме, як до вас звертатися.';
+    if (!/[А-Яа-яЇїІіЄєҐґA-Za-z]{2}/.test(t)) return 'Введіть коректне ім’я (мінімум 2 літери).';
+    return null;
+  },
+  phone: (v) => {
+    const t = String(v || '').trim();
+    if (!t) return 'Вкажіть телефон — ми зателефонуємо, щоб підтвердити замовлення.';
+    /* 0 + operator/area code 3–9 (UA codes are 03x–09x) + 8 digits */
+    if (!/^0[3-9]\d{8}$/.test(normalizePhone(t))) return 'Перевірте номер телефону. ' + PHONE_HINT;
+    return null;
+  },
+};
+
 function CheckoutScreen({ nav, cart, placeOrder }) {
   const [step, setStep] = React.useState(0);
   const [delivery, setDelivery] = React.useState('np');
   const [store, setStore] = React.useState('A-2');
   const [pay, setPay] = React.useState('cod');
+  const [form, setForm] = React.useState({ name:'', phone:'', city:'', comment:'' });
+  const [errors, setErrors] = React.useState({});
   const total = cart.reduce((s,i)=>s+i.p.price*i.qty,0);
   const steps = ['Контакти','Доставка','Підтвердження'];
+
+  /* revalidate a field only once it already showed an error → no nagging mid-typing */
+  const setField = (k, v) => {
+    setForm(f => ({ ...f, [k]: v }));
+    setErrors(e => (e[k] && VALIDATORS[k]) ? { ...e, [k]: VALIDATORS[k](v) } : e);
+  };
+  const blurField = (k) => {
+    if (VALIDATORS[k]) setErrors(e => ({ ...e, [k]: VALIDATORS[k](form[k]) }));
+  };
+  const checkContacts = () => {
+    const next = { name: VALIDATORS.name(form.name), phone: VALIDATORS.phone(form.phone) };
+    setErrors(e => ({ ...e, ...next }));
+    const bad = ['name','phone'].find(k => next[k]);
+    if (bad) {
+      const el = document.getElementById('co-' + bad);
+      if (el) { el.focus(); if (el.scrollIntoView) el.scrollIntoView({ block:'center' }); }
+      return false;
+    }
+    return true;
+  };
+  const submitOrder = () => {
+    if (!checkContacts()) { setStep(0); return; }   // guard: never submit an invalid request
+    placeOrder({ ...form, phone: '+38' + normalizePhone(form.phone), delivery,
+      store: delivery === 'pickup' ? store : null, pay, total });
+  };
   return (
     <div>
       <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, margin:'0 0 16px', color:'var(--ink-900)' }}>Оформлення</h1>
@@ -89,10 +144,23 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
 
       {step===0 && (
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-          <In2 label="Ім’я та прізвище" placeholder="Наприклад, Олена Коваль" required />
-          <In2 label="Телефон" type="tel" placeholder="+380 __ ___ __ __" required icon={Ic('phone')} />
-          <In2 label="Місто" placeholder="Кам’янське / Дніпро…" icon={Ic('map-pin')} />
-          <B2 variant="primary" size="lg" fullWidth onClick={()=>setStep(1)}>Далі</B2>
+          {(errors.name || errors.phone) && (
+            <div role="alert" style={{ background:'var(--red-100)', color:'var(--red-500)', fontWeight:700, fontSize:13.5,
+              borderRadius:'var(--radius-md)', padding:'10px 14px' }}>
+              Перевірте, будь ласка, виділені поля.
+            </div>
+          )}
+          <In2 id="co-name" name="name" label="Ім’я та прізвище" placeholder="Наприклад, Олена Коваль" required
+            autoComplete="name" value={form.name} error={errors.name} aria-invalid={!!errors.name}
+            onChange={e=>setField('name', e.target.value)} onBlur={()=>blurField('name')} />
+          <In2 id="co-phone" name="phone" label="Телефон" type="tel" placeholder="+380 __ ___ __ __" required
+            icon={Ic('phone')} autoComplete="tel" inputMode="tel" value={form.phone}
+            error={errors.phone} hint={PHONE_HINT} aria-invalid={!!errors.phone}
+            onChange={e=>setField('phone', e.target.value)} onBlur={()=>blurField('phone')} />
+          <In2 id="co-city" name="city" label="Місто" placeholder="Кам’янське / Дніпро…" icon={Ic('map-pin')}
+            autoComplete="address-level2" hint="Необов’язково — уточнимо під час дзвінка."
+            value={form.city} onChange={e=>setField('city', e.target.value)} />
+          <B2 variant="primary" size="lg" fullWidth onClick={()=>{ if(checkContacts()) setStep(1); }}>Далі</B2>
         </div>
       )}
 
@@ -118,7 +186,8 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
               <RadioRow key={o[0]} active={pay===o[0]} onClick={()=>o[0]==='cod'&&setPay(o[0])} title={o[1]} sub={o[2]} disabled={o[0]==='card'} />
             ))}
           </div>
-          <In2 label="Коментар до замовлення" placeholder="Напр.: зателефонуйте після 18:00" />
+          <In2 name="comment" label="Коментар до замовлення" placeholder="Напр.: зателефонуйте після 18:00"
+            value={form.comment} onChange={e=>setField('comment', e.target.value)} />
           <div style={{ display:'flex', gap:10 }}>
             <B2 variant="ghost" onClick={()=>setStep(0)}>Назад</B2>
             <B2 variant="primary" size="lg" fullWidth onClick={()=>setStep(2)}>Далі</B2>
@@ -141,11 +210,15 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             <div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, marginTop:8 }}>
               {delivery==='pickup'?`Самовивіз · магазин ${store}`:delivery==='np'?'Нова пошта':'Кур’єр по місту'} · {pay==='cod'?'Оплата при отриманні':'Картка онлайн'}
             </div>
+            <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:10, paddingTop:10, fontSize:13.5, color:'var(--ink-700)', fontWeight:600 }}>
+              <div><b style={{color:'var(--ink-900)'}}>{form.name}</b> · {form.phone}{form.city?` · ${form.city}`:''}</div>
+              <a onClick={()=>setStep(0)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Змінити контакти</a>
+            </div>
           </div>
           <No2 tone="info" title="Підтвердження від магазину">Це попереднє замовлення. Менеджер зв’яжеться з вами найближчим часом, щоб підтвердити наявність і деталі.</No2>
           <div style={{ display:'flex', gap:10, marginTop:14 }}>
             <B2 variant="ghost" onClick={()=>setStep(1)}>Назад</B2>
-            <B2 variant="primary" size="lg" fullWidth onClick={placeOrder}>Підтвердити замовлення</B2>
+            <B2 variant="primary" size="lg" fullWidth onClick={submitOrder}>Підтвердити замовлення</B2>
           </div>
         </div>
       )}
