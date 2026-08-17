@@ -5,7 +5,7 @@ const { Button, Badge, IconButton, Input } = DS;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
 const Scr = window.AlisaScreens;
-const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, CSURF, C500, C100, C600, Icon } = U;
+const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, CSURF, Stars, DemoTag, ReviewCard, TrustBar, C500, C100, C600, Icon } = U;
 const I = Icon;
 const IG = 'https://www.instagram.com/alisa.kids.shop/';
 
@@ -140,6 +140,22 @@ function DesktopHome({ nav, tabNav, addToCart }) {
             ? <Clickable key={i} onClick={()=>tabNav(b[3])} style={box}>{inner}</Clickable>
             : <div key={i} style={box}>{inner}</div>;
         })}
+      </div>
+
+      {/* what parents say */}
+      <div style={{ marginBottom:40 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18, flexWrap:'wrap' }}>
+          <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:30, margin:0, color:'var(--ink-900)' }}>Що кажуть батьки</h2>
+          {S.REVIEWS_ARE_DEMO && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
+        </div>
+        {S.REVIEWS_ARE_DEMO && (
+          <p style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, margin:'-8px 0 14px' }}>
+            Це приклади для прототипу, а не справжні відгуки покупців.
+          </p>
+        )}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:18 }}>
+          {S.shopReviews().concat(S.REVIEWS.filter(r=>r.product).slice(0,2)).slice(0,4).map(r=> <ReviewCard key={r.id} r={r} />)}
+        </div>
       </div>
 
       {/* instagram */}

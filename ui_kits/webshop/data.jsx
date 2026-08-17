@@ -113,6 +113,32 @@ function filterChips(f) {
   return out;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   DEMO REVIEWS — placeholder content so the layout can be evaluated.
+   ⚠️ THESE ARE NOT REAL CUSTOMER REVIEWS. They are written examples and are
+   labelled as such in the UI ("Приклад"). Replace with genuine reviews collected
+   from real customers before launch — publishing invented reviews as real is
+   deceptive and illegal under unfair-competition rules.
+   ───────────────────────────────────────────────────────────────────────────── */
+const REVIEWS_ARE_DEMO = true;
+const REVIEWS = [
+  { id:'r1', product:'104223', author:'Олена',  city:'Кам’янське', rating:5, date:'2026-01-14', text:'Комбінезон теплий, дитина не змерзла навіть у мороз. Розмір відповідає — брали 98 на 3 роки.' },
+  { id:'r2', product:'104223', author:'Ірина',  city:'Дніпро',     rating:4, date:'2026-01-28', text:'Якість хороша, але блискавка спочатку тугувата. Загалом задоволені.' },
+  { id:'r3', product:'309845', author:'Марина', city:'Кам’янське', rating:5, date:'2026-02-02', text:'Кросівки зручні, син носить щодня в садок. Не тиснуть, легко взуваються.' },
+  { id:'r4', product:'223410', author:'Наталя', city:'Дніпро',     rating:5, date:'2026-02-11', text:'Ведмедик м’якенький, донька спить з ним. Шви акуратні, нічого не сиплеться.' },
+  { id:'r5', product:'502118', author:'Ольга',  city:'Кам’янське', rating:5, date:'2026-02-20', text:'Рюкзак легкий, спинка тримає форму. Взяли до школи — дуже задоволені.' },
+  { id:'r6', product:'220871', author:'Тетяна', city:'Дніпро',     rating:4, date:'2026-03-03', text:'Кубики гарні, дерево гладеньке без задирок. Хотілося б більше деталей у наборі.' },
+  { id:'r7', product:null,     author:'Світлана', city:'Кам’янське', rating:5, date:'2026-02-25', text:'Замовила онлайн, менеджер передзвонив за 15 хвилин і все підтвердив. Забрала в магазині того ж дня.' },
+  { id:'r8', product:null,     author:'Юлія',  city:'Дніпро',     rating:5, date:'2026-03-08', text:'Приємно, що можна приміряти в магазині, а не гадати з розміром. Обмін зробили без питань.' },
+];
+const reviewsFor = (id) => REVIEWS.filter(r => r.product === id);
+const shopReviews = () => REVIEWS.filter(r => !r.product);
+const ratingOf = (id) => {
+  const rs = reviewsFor(id);
+  if (!rs.length) return null;
+  return { avg: Math.round((rs.reduce((s,r)=>s+r.rating,0) / rs.length) * 10) / 10, count: rs.length };
+};
+
 // price buckets for sale page
 const BUCKETS = [
   { uk: 'до 199 ₴', max: 199, color: 'green' },
@@ -131,6 +157,7 @@ const AV_LABEL = {
 
 window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
   AGE_BUCKETS, applyFilters, filterChips, heightRange,
+  REVIEWS, REVIEWS_ARE_DEMO, reviewsFor, shopReviews, ratingOf,
   catById: (id) => CATS.find(c => c.id === id),
   byId: (id) => PRODUCTS.find(p => p.id === id),
   inCat: (id) => PRODUCTS.filter(p => p.cat === id),

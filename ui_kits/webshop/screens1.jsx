@@ -4,7 +4,7 @@
 const { Button, Badge, Tag, IconButton, Input, Notice } = window.AlisaKidsStoreDesignSystem_194dcf;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
-const { Icon, Clickable, CSURF, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
+const { Icon, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
 
 /* ---------------- HOME ---------------- */
 function HomeScreen({ nav, addToCart }) {
@@ -75,6 +75,14 @@ function HomeScreen({ nav, addToCart }) {
           </div>
         ))}
       </div>
+
+      {/* what parents say */}
+      <div style={{ height:24 }}></div>
+      <div style={{ display:'flex', alignItems:'center', gap:10, margin:'0 0 12px', flexWrap:'wrap' }}>
+        <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>Що кажуть батьки</h2>
+        {S.REVIEWS_ARE_DEMO && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
+      </div>
+      <HScroll w={260}>{S.shopReviews().concat(S.REVIEWS.filter(r=>r.product).slice(0,3)).map(r=> <ReviewCard key={r.id} r={r} compact />)}</HScroll>
 
       {/* social */}
       <div style={{ height:24 }}></div>
@@ -178,6 +186,8 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
   const [qty, setQty] = React.useState(1);
   const [gallery, setGallery] = React.useState(0);
   const b = p.badge && U.PBADGE[p.badge];
+  const rating = S.ratingOf(p.id);
+  const reviews = S.reviewsFor(p.id);
   return (
     <div>
       <Breadcrumbs items={[{label:'Головна',onClick:()=>nav('home')},{label:cat.uk,onClick:()=>nav('catalog',{cat:cat.id})},{label:p.name}]} />
@@ -194,7 +204,15 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
       </div>
 
       <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:25, margin:'4px 0 4px', color:'var(--ink-900)', lineHeight:1.1 }}>{p.name}</h1>
-      <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:700, marginBottom:12 }}>Арт. {p.id}</div>
+      <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:700, marginBottom:8 }}>Арт. {p.id}</div>
+      {rating && (
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12, flexWrap:'wrap' }}>
+          <Stars value={rating.avg} size={16} />
+          <span style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{rating.avg}</span>
+          <span style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600 }}>· {rating.count} {rating.count===1?'відгук':'відгуки'}</span>
+          {S.REVIEWS_ARE_DEMO && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
+        </div>
+      )}
       <Price p={p} size={34} />
 
       {/* size selector */}
@@ -264,6 +282,8 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
         </div>
       </div>
 
+      <TrustBar />
+
       {/* description + characteristics */}
       <div style={{ height:8 }}></div>
       <SectionHead title="Опис" />
@@ -281,6 +301,30 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
 
       {/* similar */}
       <div style={{ height:18 }}></div>
+      {/* safety & quality — factual, no certification claims we cannot verify */}
+      <SectionHead title="Безпека та якість" />
+      <div style={{ background:'var(--green-100)', borderRadius:'var(--radius-md)', padding:'14px 16px', marginBottom:18 }}>
+        <ul style={{ margin:0, paddingLeft:18, fontSize:14, color:'var(--ink-700)', lineHeight:1.6, fontWeight:500 }}>
+          <li>Вік / розмір: <b style={{color:'var(--ink-900)'}}>{p.ages==='one'?'один розмір':p.ages}</b> — якщо вагаєтесь, підкажемо по телефону.</li>
+          <li>Усі товари можна оглянути та приміряти у наших магазинах перед покупкою.</li>
+          <li>Якщо щось не так — обмін або повернення протягом 14 днів із чеком.</li>
+        </ul>
+      </div>
+
+      {/* reviews */}
+      <div style={{ display:'flex', alignItems:'center', gap:10, margin:'0 0 12px', flexWrap:'wrap' }}>
+        <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>Відгуки</h2>
+        {S.REVIEWS_ARE_DEMO && reviews.length>0 && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
+      </div>
+      {S.REVIEWS_ARE_DEMO && reviews.length>0 && (
+        <p style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600, margin:'0 0 10px', lineHeight:1.5 }}>
+          Це приклади для прототипу, а не справжні відгуки покупців.
+        </p>
+      )}
+      {reviews.length>0
+        ? <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:18 }}>{reviews.map(r=> <ReviewCard key={r.id} r={r} />)}</div>
+        : <div style={{ marginBottom:18 }}><ReviewsEmpty onWrite={openDM} /></div>}
+
       <SectionHead title="Схожі товари" />
       <HScroll>{S.inCat(p.cat).filter(x=>x.id!==p.id).concat(S.PRODUCTS).slice(0,6).map(x=> <ProductCard key={x.id} p={x} cat={S.catById(x.cat)} onOpen={()=>nav('product',{id:x.id})} onAdd={()=>addToCart(x)} />)}</HScroll>
 

@@ -132,6 +132,91 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
   );
 }
 
+/* ---- trust signals: ratings, reviews, guarantees ---- */
+
+/* Star rating. Amber stars on white fail AA as text, so the accessible label carries the
+   value and the stars are decorative (aria-hidden). */
+function Stars({ value = 0, size = 15 }) {
+  const full = Math.round(value);
+  return (
+    <span role="img" aria-label={`Оцінка ${value} з 5`} style={{ display:'inline-flex', gap:1, verticalAlign:'middle' }}>
+      {[1,2,3,4,5].map(i=>(
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true"
+          fill={i<=full ? 'var(--yellow-500)' : 'var(--ink-200)'} style={{ display:'block' }}>
+          <path d="M12 2.5l2.9 5.9 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5L2.5 9.3l6.6-.9z"/>
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+/* Marks demo content so nobody mistakes example reviews for real ones. */
+function DemoTag({ note }) {
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:'var(--yellow-100)',
+      border:'1px solid var(--yellow-500)', color:'var(--ink-900)', borderRadius:'var(--radius-pill)',
+      padding:'3px 9px', fontSize:11, fontWeight:800, whiteSpace:'nowrap' }} title={note||''}>
+      Приклад
+    </span>
+  );
+}
+
+function ReviewCard({ r, compact }) {
+  const d = new Date(r.date + 'T00:00:00');
+  const when = isNaN(d) ? r.date : d.toLocaleDateString('uk-UA', { day:'numeric', month:'long', year:'numeric' });
+  return (
+    <article style={{ background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)',
+      padding:compact?14:16, boxShadow:'var(--ring-soft)', height:'100%', boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:6 }}>
+        <span aria-hidden="true" style={{ width:32, height:32, flex:'none', borderRadius:'50%', background:'var(--pink-100)',
+          color:'var(--pink-600)', fontWeight:800, fontSize:14, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {r.author.slice(0,1)}
+        </span>
+        <div style={{ minWidth:0 }}>
+          <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{r.author}</div>
+          <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:600 }}>{r.city} · {when}</div>
+        </div>
+      </div>
+      <Stars value={r.rating} />
+      <p style={{ margin:'8px 0 0', fontSize:14, color:'var(--ink-700)', lineHeight:1.55, fontWeight:500 }}>{r.text}</p>
+    </article>
+  );
+}
+
+/* Honest empty state — what a real shop sees before it has collected reviews. */
+function ReviewsEmpty({ onWrite }) {
+  return (
+    <div style={{ background:'#fff', border:'1px dashed var(--ink-200)', borderRadius:'var(--radius-lg)',
+      padding:'20px 18px', textAlign:'center' }}>
+      <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)' }}>Відгуків ще немає</div>
+      <p style={{ fontSize:13.5, color:'var(--ink-500)', fontWeight:600, margin:'6px 0 12px' }}>
+        Купували у нас? Напишіть, будь ласка, кілька слів — це допоможе іншим батькам.
+      </p>
+      {onWrite && <Button variant="secondary" size="sm" onClick={onWrite}>Залишити відгук</Button>}
+    </div>
+  );
+}
+
+/* Factual guarantees — true statements about how the shop actually works. */
+function TrustBar({ items }) {
+  const def = items || [
+    ['repeat','Обмін 14 днів','із чеком'],
+    ['store','Приміряйте у магазині','А-1 · А-2 · А-3'],
+    ['wallet','Оплата при отриманні','готівка або картка'],
+  ];
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:`repeat(${def.length},1fr)`, gap:8, margin:'14px 0' }}>
+      {def.map((b,i)=>(
+        <div key={i} style={{ background:'var(--pink-100)', borderRadius:'var(--radius-md)', padding:'10px 8px', textAlign:'center' }}>
+          <i data-lucide={b[0]} style={{ width:20, height:20, color:'var(--pink-600)' }} aria-hidden="true"></i>
+          <div style={{ fontWeight:800, fontSize:12, color:'var(--ink-900)', marginTop:4, lineHeight:1.25 }}>{b[1]}</div>
+          <div style={{ fontSize:11, color:'var(--ink-700)', fontWeight:600 }}>{b[2]}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SectionHead({ title, action, onAction }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', margin:'0 0 12px' }}>
@@ -229,6 +314,6 @@ function StoreCard({ s, av, onReserve }) {
   );
 }
 
-window.AlisaUI = { Icon, Clickable, CSURF, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
+window.AlisaUI = { Icon, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
 
 })();
