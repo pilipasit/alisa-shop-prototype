@@ -19,11 +19,11 @@
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
 
   # Same policy as the in-page <meta> CSP, plus the two directives a meta tag cannot express.
-  # NOTE: *.workers.dev is needed so the checkout can reach the order Worker. Once the
-  #       Worker's exact subdomain is known, tighten this to that single host.
+  # connect-src includes the order Worker so the checkout can reach it — pinned to the
+  # exact host rather than a *.workers.dev wildcard.
   # ⚠️ 'unsafe-eval' exists ONLY for in-browser Babel. When the production build lands,
   #    delete 'unsafe-eval', drop https://unpkg.com, and update the <meta> CSP to match.
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://*.workers.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
 
 # Product photos and logos change rarely — cache them for a week.
 /assets/*
