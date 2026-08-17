@@ -36,7 +36,7 @@ function App() {
   };
   const setQty = (idx,v)=> setCart(c=>{ const n=[...c]; n[idx]={...n[idx],qty:v}; return n; });
   const removeItem = (idx)=> setCart(c=>c.filter((_,i)=>i!==idx));
-  const placeOrder = ()=>{ nav('confirm'); setCart([]); };
+  const placeOrder = (res)=>{ nav('confirm', res || {}); setCart([]); };
 
   const TITLES = { catalog:'Каталог', product:'Товар', cart:'Кошик', checkout:'Оформлення', confirm:'Готово', stores:'Магазини', sale:'Розпродаж', linkbio:'Аліса', sizeguide:'Таблиця розмірів', info:'Інформація' };
   const showLogo = cur.r==='home';
@@ -48,7 +48,7 @@ function App() {
   else if(cur.r==='product') screen = <Scr.ProductScreen nav={nav} addToCart={addToCart} params={cur.p} openDM={()=>setOverlay('dm')} />;
   else if(cur.r==='cart') screen = <Scr.CartScreen nav={nav} cart={cart} setQty={setQty} removeItem={removeItem} />;
   else if(cur.r==='checkout') screen = <Scr.CheckoutScreen nav={nav} cart={cart} placeOrder={placeOrder} />;
-  else if(cur.r==='confirm') screen = <Scr.ConfirmScreen nav={tabNav} />;
+  else if(cur.r==='confirm') screen = <Scr.ConfirmScreen nav={tabNav} params={cur.p} />;
   else if(cur.r==='stores') screen = <Scr.StoresScreen nav={nav} />;
   else if(cur.r==='sale') screen = <Scr.SaleScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='linkbio') screen = <Scr.LinkBioScreen nav={nav} />;

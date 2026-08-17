@@ -345,7 +345,7 @@ function DesktopApp() {
   };
   const setQty = (idx,v)=> setCart(c=>{ const n=[...c]; n[idx]={...n[idx],qty:v}; return n; });
   const removeItem = (idx)=> setCart(c=>c.filter((_,i)=>i!==idx));
-  const placeOrder = ()=>{ nav('confirm'); setCart([]); };
+  const placeOrder = (res)=>{ nav('confirm', res || {}); setCart([]); };
   const openDM = ()=> setOverlay('dm');
 
   let inner;
@@ -353,7 +353,7 @@ function DesktopApp() {
   else if(cur.r==='product') inner = <Scr.ProductScreen nav={nav} addToCart={addToCart} params={cur.p} openDM={openDM} />;
   else if(cur.r==='cart') inner = <Scr.CartScreen nav={nav} cart={cart} setQty={setQty} removeItem={removeItem} />;
   else if(cur.r==='checkout') inner = <Scr.CheckoutScreen nav={nav} cart={cart} placeOrder={placeOrder} />;
-  else if(cur.r==='confirm') inner = <Scr.ConfirmScreen nav={tabNav} />;
+  else if(cur.r==='confirm') inner = <Scr.ConfirmScreen nav={tabNav} params={cur.p} />;
   else if(cur.r==='stores') inner = <Scr.StoresScreen nav={nav} />;
   else if(cur.r==='sale') inner = <Scr.SaleScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='linkbio') inner = <Scr.LinkBioScreen nav={nav} />;

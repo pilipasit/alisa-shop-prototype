@@ -99,6 +99,8 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
   const [pay, setPay] = React.useState('cod');
   const [form, setForm] = React.useState({ name:'', phone:'', city:'', comment:'' });
   const [errors, setErrors] = React.useState({});
+  const [sending, setSending] = React.useState(false);
+  const [sendError, setSendError] = React.useState(null);   // 'server' | 'network' | null
   const total = cart.reduce((s,i)=>s+i.p.price*i.qty,0);
   const steps = ['Контакти','Доставка','Підтвердження'];
 
@@ -121,10 +123,45 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
     }
     return true;
   };
-  const submitOrder = () => {
+  const submitOrder = async () => {
     if (!checkContacts()) { setStep(0); return; }   // guard: never submit an invalid request
-    placeOrder({ ...form, phone: '+38' + normalizePhone(form.phone), delivery,
-      store: delivery === 'pickup' ? store : null, pay, total });
+    setSendError(null);
+
+    const payload = {
+      name: form.name.trim(),
+      phone: '+38' + normalizePhone(form.phone),
+      city: form.city.trim(),
+      comment: form.comment.trim(),
+      delivery,
+      store: delivery === 'pickup' ? store : null,
+      pay,
+      items: cart.map(i => ({ id: i.p.id, name: i.p.name, size: i.size, qty: i.qty, price: i.p.price })),
+    };
+
+    /* No endpoint configured → demo mode: show the flow but admit nothing was sent. */
+    if (!S2.ORDER_ENDPOINT) { placeOrder({ ref: null, demo: true }); return; }
+
+    setSending(true);
+    try {
+      const res = await fetch(S2.ORDER_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        placeOrder({ ref: data.ref, demo: false });
+      } else if (res.status === 422) {
+        /* Server rejected a field the browser thought was fine — send them back to fix it. */
+        setSending(false); setStep(0);
+        setErrors(e => ({ ...e, ...(data.fields || []).reduce((a, f) => (a[f] = 'Перевірте це поле.', a), {}) }));
+      } else {
+        setSending(false); setSendError('server');
+      }
+    } catch (_) {
+      /* Offline, blocked by CSP, or the Worker is unreachable. */
+      setSending(false); setSendError('network');
+    }
   };
   return (
     <div>
@@ -216,9 +253,38 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             </div>
           </div>
           <No2 tone="info" title="Підтвердження від магазину">Це попереднє замовлення. Менеджер зв’яжеться з вами найближчим часом, щоб підтвердити наявність і деталі.</No2>
+
+          {/* Delivery failed — tell the truth and give a way through, never a fake success. */}
+          {sendError && (
+            <div role="alert" style={{ marginTop:14, background:'var(--red-100)', border:'2px solid var(--red-500)',
+              borderRadius:'var(--radius-md)', padding:'14px 16px' }}>
+              {/* Text is ink-900, not red-500: red on the red-100 wash is only 3.77:1.
+                  The red border + background already carry the "error" signal. */}
+              <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)', marginBottom:4,
+                display:'flex', alignItems:'center', gap:7 }}>
+                <i data-lucide="alert-circle" style={{ width:18, height:18, color:'var(--red-500)' }} aria-hidden="true"></i>
+                Не вдалося надіслати замовлення
+              </div>
+              <p style={{ fontSize:14, color:'var(--ink-700)', fontWeight:600, margin:'0 0 12px', lineHeight:1.5 }}>
+                {sendError === 'network'
+                  ? 'Схоже, немає зв’язку з інтернетом. Ваш кошик збережено — спробуйте ще раз.'
+                  : 'Технічна помилка на нашому боці. Ваш кошик збережено.'}
+                {' '}Або зателефонуйте — ми оформимо замовлення разом.
+              </p>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                <B2 variant="primary" size="sm" onClick={submitOrder}>Спробувати ще раз</B2>
+                <a href={'tel:+380988222964'} style={{ textDecoration:'none' }}>
+                  <B2 variant="secondary" size="sm" icon={Ic('phone-call')}>{S2.PHONE}</B2>
+                </a>
+              </div>
+            </div>
+          )}
+
           <div style={{ display:'flex', gap:10, marginTop:14 }}>
-            <B2 variant="ghost" onClick={()=>setStep(1)}>Назад</B2>
-            <B2 variant="primary" size="lg" fullWidth onClick={submitOrder}>Підтвердити замовлення</B2>
+            <B2 variant="ghost" onClick={()=>setStep(1)} disabled={sending}>Назад</B2>
+            <B2 variant="primary" size="lg" fullWidth onClick={submitOrder} disabled={sending}>
+              {sending ? 'Надсилаємо…' : 'Підтвердити замовлення'}
+            </B2>
           </div>
         </div>
       )}
@@ -236,12 +302,21 @@ function RadioRow({ active, onClick, title, sub, disabled }) {
 }
 
 /* ---------------- CONFIRMATION ---------------- */
-function ConfirmScreen({ nav }) {
+function ConfirmScreen({ nav, params }) {
+  const ref = params && params.ref;
+  const demo = params && params.demo;
   return (
     <div style={{ textAlign:'center', padding:'30px 16px' }}>
       <div style={{ width:104, height:104, margin:'0 auto 20px', borderRadius:'var(--radius-blob)', background:'var(--green-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide="check" style={{width:54,height:54,color:'var(--green-600)',strokeWidth:3}}></i></div>
       <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:28, color:'var(--ink-900)', margin:0 }}>Замовлення прийнято!</h1>
-      <p style={{ fontSize:15, color:'var(--ink-600)', fontWeight:600, margin:'10px auto 4px', maxWidth:300, lineHeight:1.5 }}>Дякуємо! Номер замовлення <b style={{color:'var(--ink-900)'}}>#10472</b>.</p>
+      <p style={{ fontSize:15, color:'var(--ink-600)', fontWeight:600, margin:'10px auto 4px', maxWidth:300, lineHeight:1.5 }}>
+        Дякуємо!{ref ? <> Номер замовлення <b style={{color:'var(--ink-900)'}}>{ref}</b>.</> : ''}
+      </p>
+      {demo && (
+        <p style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:700, margin:'0 auto 8px', maxWidth:320 }}>
+          (демо-режим — замовлення нікуди не надіслано)
+        </p>
+      )}
       <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 auto 22px', maxWidth:300, lineHeight:1.5 }}>Менеджер зателефонує найближчим часом, щоб підтвердити наявність і деталі доставки.</p>
       <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:320, margin:'0 auto' }}>
         <B2 variant="secondary" fullWidth icon={Ic('message-circle')} onClick={()=>window.open('https://www.instagram.com/alisa.kids.shop/','_blank')}>Написати нам у Direct</B2>

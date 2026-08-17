@@ -4,7 +4,7 @@
      compiles JSX in the browser with Babel; the production build removes both
      'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
      via <meta> — they need real response headers (see SECURITY.md). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://*.workers.dev; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — дитячий магазин · одяг, взуття, іграшки</title>
 <meta name="description" content="Інтернет-магазин дитячого одягу, взуття та іграшок «Аліса». Кам'янське та Дніпро — 3 магазини. Доставка Новою поштою, самовивіз безкоштовно.">

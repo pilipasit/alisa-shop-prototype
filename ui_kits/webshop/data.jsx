@@ -12,6 +12,13 @@ const CATS = [
   { id: 'sale',     uk: 'Розпродаж', color: 'pinkDeep', icon: 'badge-percent', desc: 'Знижки на сезонні товари та останні розміри.' },
 ];
 
+/* Where checkout submissions go. Empty = DEMO MODE: the flow still works end-to-end for
+   testing, but nothing is sent and the confirmation says so.
+   After deploying the Worker, put its URL here, e.g.
+     'https://alisa-orders.<your-subdomain>.workers.dev/order'
+   and add that origin to connect-src in _headers AND the <meta> CSP. */
+const ORDER_ENDPOINT = '';
+
 const PHONE = '+380 98 822 29 64';
 const STORES = [
   { id: 'A-1', name: 'Аліса А-1', city: 'Кам’янське', area: 'бульвар Будівельників', addr: 'бульвар Будівельників, 1-Б', hours: 'Пн–Нд 9:00–20:00', phone: PHONE },
@@ -156,6 +163,7 @@ const AV_LABEL = {
 };
 
 window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
+  ORDER_ENDPOINT,
   AGE_BUCKETS, applyFilters, filterChips, heightRange,
   REVIEWS, REVIEWS_ARE_DEMO, reviewsFor, shopReviews, ratingOf,
   catById: (id) => CATS.find(c => c.id === id),
