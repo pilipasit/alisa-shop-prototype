@@ -4,7 +4,7 @@
 const { Button, Badge, Tag, IconButton, Input, Notice } = window.AlisaKidsStoreDesignSystem_194dcf;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
-const { Icon, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
+const { Icon, Clickable, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
 
 /* ---------------- HOME ---------------- */
 function HomeScreen({ nav, addToCart }) {
@@ -24,11 +24,11 @@ function HomeScreen({ nav, addToCart }) {
       <SectionHead title="Категорії" />
       <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
         {cats.map(c=>(
-          <div key={c.id} onClick={()=>nav('catalog',{cat:c.id})} style={{ cursor:'pointer', position:'relative', overflow:'hidden', background:C500[c.color], color: c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'16px 16px 18px', minHeight:84, display:'flex', flexDirection:'column', justifyContent:'space-between', boxShadow:'var(--shadow-sm)' }}>
+          <Clickable key={c.id} onClick={()=>nav('catalog',{cat:c.id})} style={{ position:'relative', overflow:'hidden', background:C500[c.color], color: c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'16px 16px 18px', minHeight:84, display:'flex', flexDirection:'column', justifyContent:'space-between', boxShadow:'var(--shadow-sm)' }}>
             <div style={{ position:'absolute', width:90, height:90, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-22, bottom:-30 }}></div>
-            <i data-lucide={c.icon} style={{ width:30, height:30, strokeWidth:2, position:'relative' }}></i>
+            <i data-lucide={c.icon} style={{ width:30, height:30, strokeWidth:2, position:'relative' }} aria-hidden="true"></i>
             <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:19, position:'relative' }}>{c.uk}</span>
-          </div>
+          </Clickable>
         ))}
       </div>
 
@@ -80,7 +80,7 @@ function HomeScreen({ nav, addToCart }) {
       <div style={{ height:24 }}></div>
       <SectionHead title="Ми в Instagram" action="@alisa.kids.shop" onAction={()=>nav('linkbio')} />
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
-        {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} src={p.img} alt={p.name} /></div>)}
+        {S.PRODUCTS.slice(0,6).map(p=> <Clickable key={p.id} onClick={()=>nav('product',{id:p.id})} label={p.name}><Photo cat={S.catById(p.cat)} src={p.img} alt="" /></Clickable>)}
       </div>
     </div>
   );
@@ -189,7 +189,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
         </div>
         <Photo cat={cat} ratio="1 / 1" radius="var(--radius-lg)" big src={p.img} alt={p.name} />
         <div style={{ display:'flex', gap:8, marginTop:10 }}>
-          {[0,1,2].map(i=> <div key={i} onClick={()=>setGallery(i)} style={{ flex:'0 0 64px', border:'2px solid '+(gallery===i?'var(--pink-500)':'var(--ink-200)'), borderRadius:'var(--radius-md)', overflow:'hidden', cursor:'pointer' }}><Photo cat={cat} src={p.img} alt={p.name} /></div>)}
+          {[0,1,2].map(i=> <Clickable key={i} onClick={()=>setGallery(i)} label={`Фото ${i+1}`} aria-pressed={gallery===i} style={{ flex:'0 0 64px', border:'2px solid '+(gallery===i?'var(--pink-500)':'var(--ink-200)'), borderRadius:'var(--radius-md)', overflow:'hidden' }}><Photo cat={cat} src={p.img} alt="" /></Clickable>)}
         </div>
       </div>
 
@@ -202,7 +202,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
         <div style={{ margin:'18px 0' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
             <span style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{p.cat==='shoes'?'Розмір':'Розмір (зріст)'}</span>
-            <a onClick={()=>nav('sizeguide')} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4 }}><i data-lucide="ruler" style={{width:14,height:14}}></i>Таблиця розмірів</a>
+            <Clickable onClick={()=>nav('sizeguide')} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', display:'inline-flex', alignItems:'center', gap:4, textDecoration:'underline' }}><i data-lucide="ruler" style={{width:14,height:14}} aria-hidden="true"></i>Таблиця розмірів</Clickable>
           </div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
             {sizes.map(s=> <button key={s} onClick={()=>setSize(s)} style={{ minWidth:48, height:44, padding:'0 12px', borderRadius:'var(--radius-md)', cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:800, fontSize:15, border:'2px solid '+(size===s?'var(--pink-500)':'var(--ink-200)'), background:size===s?'var(--pink-100)':'#fff', color:size===s?'var(--pink-600)':'var(--ink-700)' }}>{s}</button>)}

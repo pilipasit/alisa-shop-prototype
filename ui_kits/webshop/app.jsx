@@ -221,7 +221,7 @@ function MenuDrawer({ onClose, nav }) {
       </div>
       <div style={{ marginTop:18, fontWeight:800, fontSize:12, color:'var(--ink-400)', textTransform:'uppercase', letterSpacing:'.05em' }}>Інформація</div>
       <div style={{ display:'flex', flexDirection:'column', gap:2, marginTop:8 }}>
-        {info.map(t=> <a key={t} onClick={onClose} style={{ padding:'8px 4px', fontSize:14, fontWeight:600, color:'var(--ink-600)', cursor:'pointer' }}>{t}</a>)}
+        {info.map(t=> <Ud.Clickable key={t} onClick={onClose} style={{ padding:'8px 4px', fontSize:14, fontWeight:600, color:'var(--ink-600)' }}>{t}</Ud.Clickable>)}
       </div>
     </Sheet>
   );

@@ -4,7 +4,7 @@
 const { Button: B2, Badge: Bg2, Input: In2, Notice: No2, IconButton: Ib2 } = window.AlisaKidsStoreDesignSystem_194dcf;
 const S2 = window.AlisaShop;
 const U2 = window.AlisaUI;
-const { Icon: Ic, Photo: Ph, ProductCard: PC2, SectionHead: SH2, HScroll: HS2, PromoBanner: PB2, StoreCard, Breadcrumbs: BC2, Qty: Qty2, Price: Pr2, C500: c5, C100: c1, C600: c6 } = U2;
+const { Icon: Ic, Clickable: Clk, Photo: Ph, ProductCard: PC2, SectionHead: SH2, HScroll: HS2, PromoBanner: PB2, StoreCard, Breadcrumbs: BC2, Qty: Qty2, Price: Pr2, C500: c5, C100: c1, C600: c6 } = U2;
 
 /* ---------------- CART ---------------- */
 function CartScreen({ nav, cart, setQty, removeItem }) {
@@ -212,7 +212,7 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             </div>
             <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:10, paddingTop:10, fontSize:13.5, color:'var(--ink-700)', fontWeight:600 }}>
               <div><b style={{color:'var(--ink-900)'}}>{form.name}</b> · {form.phone}{form.city?` · ${form.city}`:''}</div>
-              <a onClick={()=>setStep(0)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, cursor:'pointer' }}>Змінити контакти</a>
+              <Clk onClick={()=>setStep(0)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, textDecoration:'underline' }}>Змінити контакти</Clk>
             </div>
           </div>
           <No2 tone="info" title="Підтвердження від магазину">Це попереднє замовлення. Менеджер зв’яжеться з вами найближчим часом, щоб підтвердити наявність і деталі.</No2>
@@ -288,9 +288,9 @@ function SaleScreen({ nav, addToCart }) {
       <SH2 title="За ціною" />
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:22 }}>
         {S2.BUCKETS.map(bk=>(
-          <div key={bk.uk} onClick={()=>nav('catalog',{cat:'sale'})} style={{ cursor:'pointer', background:c1[bk.color], borderRadius:'var(--radius-lg)', padding:'18px 10px', textAlign:'center' }}>
+          <Clk key={bk.uk} onClick={()=>nav('catalog',{cat:'sale'})} style={{ background:c1[bk.color], borderRadius:'var(--radius-lg)', padding:'18px 10px', textAlign:'center' }}>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, color:c6[bk.color] }}>{bk.uk}</div>
-          </div>
+          </Clk>
         ))}
       </div>
 
@@ -326,11 +326,11 @@ function LinkBioScreen({ nav }) {
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16 }}>
         {blocks.map(b=>(
-          <div key={b[0]} onClick={b[3]} style={{ cursor:'pointer', background:c5[b[2]], color:b[2]==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'20px 12px', display:'flex', flexDirection:'column', alignItems:'center', gap:8, boxShadow:'var(--shadow-sm)', position:'relative', overflow:'hidden' }}>
+          <Clk key={b[0]} onClick={b[3]} style={{ background:c5[b[2]], color:b[2]==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'20px 12px', display:'flex', flexDirection:'column', alignItems:'center', gap:8, boxShadow:'var(--shadow-sm)', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', width:70, height:70, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-16, bottom:-22 }}></div>
-            <i data-lucide={b[1]} style={{ width:30, height:30, position:'relative' }}></i>
+            <i data-lucide={b[1]} style={{ width:30, height:30, position:'relative' }} aria-hidden="true"></i>
             <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16, position:'relative' }}>{b[0]}</span>
-          </div>
+          </Clk>
         ))}
       </div>
 

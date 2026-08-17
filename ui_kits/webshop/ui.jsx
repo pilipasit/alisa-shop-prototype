@@ -10,6 +10,35 @@ const C600 = { blue:'var(--blue-600)', green:'var(--green-600)', yellow:'var(--y
 
 const Icon = (n, props={}) => <i data-lucide={n} {...props}></i>;
 
+/* ---- a11y foundation: visible focus rings + a reset class so real <button>s can look like anything ---- */
+(function injectA11yCSS(){
+  if (typeof document === 'undefined' || document.getElementById('alisa-a11y')) return;
+  const s = document.createElement('style');
+  s.id = 'alisa-a11y';
+  s.textContent = `
+.a-click{appearance:none;-webkit-appearance:none;background:none;border:0;margin:0;padding:0;
+  font:inherit;color:inherit;text-align:inherit;cursor:pointer}
+.a-click::-moz-focus-inner{border:0;padding:0}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+[tabindex]:focus-visible,.a-click:focus-visible{outline:3px solid var(--pink-500);outline-offset:2px}
+.a-skip{position:absolute;left:-9999px;top:0;z-index:200}
+.a-skip:focus{left:10px;top:10px;background:#fff;color:var(--pink-600);padding:10px 18px;
+  border-radius:var(--radius-pill);font-weight:800;font-size:14px;box-shadow:var(--shadow-md)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+`;
+  document.head.appendChild(s);
+})();
+
+/* A real, focusable, keyboard-operable control that keeps whatever visual box you give it.
+   Use instead of <div onClick> / <a onClick> so Tab and Enter/Space work. */
+function Clickable({ children, style, label, title, ...rest }) {
+  return (
+    <button type="button" className="a-click" aria-label={label} title={title} style={style} {...rest}>
+      {children}
+    </button>
+  );
+}
+
 /* product/category photo — real image when `src` is set, else soft-tint placeholder */
 function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false, src, alt }) {
   const col = cat ? cat.color : 'pink';
@@ -97,7 +126,7 @@ function SectionHead({ title, action, onAction }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', margin:'0 0 12px' }}>
       <h3 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>{title}</h3>
-      {action && <a onClick={onAction} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', cursor:'pointer', whiteSpace:'nowrap' }}>{action} →</a>}
+      {action && <Clickable onClick={onAction} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', whiteSpace:'nowrap' }}>{action} →</Clickable>}
     </div>
   );
 }
@@ -115,13 +144,13 @@ function PromoBanner({ color='pink', kicker, title, sub, cta, icon, onClick }) {
   const dark = color==='yellow';
   const fg = dark ? 'var(--ink-900)' : '#fff';
   return (
-    <div onClick={onClick} style={{ position:'relative', overflow:'hidden', borderRadius:'var(--radius-lg)', background:C500[color], color:fg, padding:'20px 22px', cursor:'pointer', boxShadow:'var(--shadow-sm)' }}>
+    <Clickable onClick={onClick} style={{ display:'block', width:'100%', position:'relative', overflow:'hidden', borderRadius:'var(--radius-lg)', background:C500[color], color:fg, padding:'20px 22px', boxShadow:'var(--shadow-sm)' }}>
       <div style={{ position:'absolute', width:150, height:150, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
       {kicker && <div style={{ position:'relative', fontWeight:800, fontSize:12, textTransform:'uppercase', letterSpacing:'.05em', opacity:.92 }}>{kicker}</div>}
       <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, lineHeight:1.02, margin:'4px 0 2px' }}>{title}</div>
       {sub && <div style={{ position:'relative', fontWeight:600, fontSize:14, opacity:.95 }}>{sub}</div>}
       {cta && <div style={{ position:'relative', marginTop:14, display:'inline-flex', alignItems:'center', gap:6, background:dark?'var(--ink-900)':'#fff', color:dark?'#fff':C600[color], fontWeight:700, fontSize:14, padding:'9px 16px', borderRadius:'var(--radius-pill)' }}>{cta} <i data-lucide="arrow-right" style={{width:15,height:15}}></i></div>}
-    </div>
+    </Clickable>
   );
 }
 
@@ -136,14 +165,16 @@ function FilterChip({ label, active, onClick, color }) {
 
 function Breadcrumbs({ items }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize:12.5, color:'var(--ink-400)', fontWeight:700, marginBottom:10 }}>
+    <nav aria-label="Навігація по сайту" style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize:12.5, color:'var(--ink-400)', fontWeight:700, marginBottom:10 }}>
       {items.map((it,i)=>(
         <React.Fragment key={i}>
-          {i>0 && <i data-lucide="chevron-right" style={{width:13,height:13}}></i>}
-          <span onClick={it.onClick} style={{ cursor:it.onClick?'pointer':'default', color: i===items.length-1?'var(--ink-700)':'var(--ink-400)' }}>{it.label}</span>
+          {i>0 && <i data-lucide="chevron-right" style={{width:13,height:13}} aria-hidden="true"></i>}
+          {it.onClick
+            ? <Clickable onClick={it.onClick} style={{ color:'var(--ink-400)', textDecoration:'underline' }}>{it.label}</Clickable>
+            : <span aria-current="page" style={{ color:'var(--ink-700)' }}>{it.label}</span>}
         </React.Fragment>
       ))}
-    </div>
+    </nav>
   );
 }
 
@@ -188,6 +219,6 @@ function StoreCard({ s, av, onReserve }) {
   );
 }
 
-window.AlisaUI = { Icon, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
+window.AlisaUI = { Icon, Clickable, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
 
 })();

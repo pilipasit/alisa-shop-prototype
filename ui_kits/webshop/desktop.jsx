@@ -5,7 +5,7 @@ const { Button, Badge, IconButton, Input } = DS;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
 const Scr = window.AlisaScreens;
-const { Photo, ProductCard, PromoBanner, FilterChip, C500, C100, C600, Icon } = U;
+const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, C500, C100, C600, Icon } = U;
 const I = Icon;
 const IG = 'https://www.instagram.com/alisa.kids.shop/';
 
@@ -26,10 +26,11 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
         </div>
       </div>
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'16px 24px', display:'flex', alignItems:'center', gap:26 }}>
-        <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:40, cursor:'pointer' }} onClick={()=>tabNav('home')} />
+        <Clickable onClick={()=>tabNav('home')} label="Аліса — на головну"><img src="../../assets/logo-primary.svg" alt="" style={{ height:40, display:'block' }} /></Clickable>
         <div style={{ flex:1, position:'relative', maxWidth:520 }}>
           <i data-lucide="search" style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:19, height:19, color:'var(--ink-400)' }}></i>
-          <input readOnly placeholder="Пошук товарів — наприклад, «комбінезон»" onClick={openSearch} style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', fontFamily:'var(--font-body)', fontWeight:600, fontSize:15, outline:'none', cursor:'pointer', background:'#fff' }} />
+          <input readOnly aria-label="Пошук товарів" placeholder="Пошук товарів — наприклад, «комбінезон»" onClick={openSearch}
+            onKeyDown={e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSearch(); } }} style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', fontFamily:'var(--font-body)', fontWeight:600, fontSize:15, outline:'none', cursor:'pointer', background:'#fff' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
           <IconButton aria-label="Бажане" variant="ghost" onClick={()=>window.open(IG,'_blank')}><i data-lucide="heart"></i></IconButton>
@@ -39,9 +40,9 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
       <nav style={{ borderTop:'1px solid var(--ink-100)' }}>
         <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', display:'flex', gap:4 }}>
           {NAV.map((n,i)=>(
-            <a key={n[0]} onClick={()=>n[1]==='sale'?tabNav('sale'):tabNav('catalog',n[2])} style={{ cursor:'pointer', padding:'13px 16px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:i===6?'var(--pink-600)':'var(--ink-700)', display:'flex', alignItems:'center', gap:7 }}>
-              {i===0 && <i data-lucide="layout-grid" style={{width:17,height:17}}></i>}{n[0]}
-            </a>
+            <Clickable key={n[0]} onClick={()=>n[1]==='sale'?tabNav('sale'):tabNav('catalog',n[2])} style={{ padding:'13px 16px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:i===6?'var(--pink-600)':'var(--ink-700)', display:'flex', alignItems:'center', gap:7 }}>
+              {i===0 && <i data-lucide="layout-grid" style={{width:17,height:17}} aria-hidden="true"></i>}{n[0]}
+            </Clickable>
           ))}
         </div>
       </nav>
@@ -88,7 +89,7 @@ function Section({ title, link, onLink, children }) {
     <div style={{ marginBottom:40 }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:30, margin:0, color:'var(--ink-900)' }}>{title}</h2>
-        {link && <a onClick={onLink} style={{ cursor:'pointer', fontWeight:700, fontSize:15, color:'var(--pink-600)' }}>{link} →</a>}
+        {link && <Clickable onClick={onLink} style={{ fontWeight:700, fontSize:15, color:'var(--pink-600)', textDecoration:'underline' }}>{link} →</Clickable>}
       </div>
       {children}
     </div>
@@ -110,13 +111,13 @@ function DesktopHome({ nav, tabNav, addToCart }) {
       {/* categories */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:14, marginBottom:42 }}>
         {S.CATS.map(c=>(
-          <div key={c.id} onClick={()=>c.id==='sale'?tabNav('sale'):nav('catalog',{cat:c.id})} style={{ cursor:'pointer', textAlign:'center' }}>
+          <Clickable key={c.id} onClick={()=>c.id==='sale'?tabNav('sale'):nav('catalog',{cat:c.id})} style={{ textAlign:'center', display:'block', width:'100%' }}>
             <div style={{ aspectRatio:'1/1', background:C500[c.color], color:c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10, position:'relative', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
               <div style={{ position:'absolute', width:60, height:60, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-14, bottom:-18 }}></div>
-              <i data-lucide={c.icon} style={{ width:34, height:34, position:'relative' }}></i>
+              <i data-lucide={c.icon} style={{ width:34, height:34, position:'relative' }} aria-hidden="true"></i>
             </div>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:'var(--ink-900)' }}>{c.uk}</div>
-          </div>
+          </Clickable>
         ))}
       </div>
 
@@ -129,18 +130,22 @@ function DesktopHome({ nav, tabNav, addToCart }) {
 
       {/* benefits */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:18, marginBottom:42 }}>
-        {[['store','3 магазини поруч','Кам’янське · Дніпро','stores'],['repeat','Легкий обмін','14 днів із чеком',null],['message-circle','Прямий зв’язок','Direct · Viber · Telegram',null],['package-check','Самовивіз безкоштовно','з будь-якого магазину','stores']].map((b,i)=>(
-          <div key={i} onClick={()=>b[3]&&tabNav(b[3])} style={{ background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)', padding:22, boxShadow:'var(--ring-soft)', display:'flex', gap:14, alignItems:'center', cursor:b[3]?'pointer':'default' }}>
-            <div style={{ width:50, height:50, flex:'none', borderRadius:'var(--radius-md)', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={b[0]} style={{width:24,height:24,color:'var(--pink-600)'}}></i></div>
+        {[['store','3 магазини поруч','Кам’янське · Дніпро','stores'],['repeat','Легкий обмін','14 днів із чеком',null],['message-circle','Прямий зв’язок','Direct · Viber · Telegram',null],['package-check','Самовивіз безкоштовно','з будь-якого магазину','stores']].map((b,i)=>{
+          const inner = (<React.Fragment>
+            <div style={{ width:50, height:50, flex:'none', borderRadius:'var(--radius-md)', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={b[0]} style={{width:24,height:24,color:'var(--pink-600)'}} aria-hidden="true"></i></div>
             <div><div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)' }}>{b[1]}</div><div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600 }}>{b[2]}</div></div>
-          </div>
-        ))}
+          </React.Fragment>);
+          const box = { background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)', padding:22, boxShadow:'var(--ring-soft)', display:'flex', gap:14, alignItems:'center', textAlign:'left' };
+          return b[3]
+            ? <Clickable key={i} onClick={()=>tabNav(b[3])} style={box}>{inner}</Clickable>
+            : <div key={i} style={box}>{inner}</div>;
+        })}
       </div>
 
       {/* instagram */}
       <Section title="Ми в Instagram" link="@alisa.kids.shop" onLink={()=>window.open(IG,'_blank')}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:14 }}>
-          {S.PRODUCTS.slice(0,6).map(p=> <div key={p.id} onClick={()=>nav('product',{id:p.id})} style={{cursor:'pointer'}}><Photo cat={S.catById(p.cat)} src={p.img} alt={p.name} /></div>)}
+          {S.PRODUCTS.slice(0,6).map(p=> <Clickable key={p.id} onClick={()=>nav('product',{id:p.id})} label={p.name}><Photo cat={S.catById(p.cat)} src={p.img} alt="" /></Clickable>)}
         </div>
       </Section>
     </div>
@@ -149,7 +154,7 @@ function DesktopHome({ nav, tabNav, addToCart }) {
 
 /* ---------------- FOOTER ---------------- */
 function Footer({ nav, tabNav, openDM }) {
-  const link = (label, onClick)=> <a key={label} onClick={onClick} style={{ cursor:'pointer', fontSize:14, color:'var(--ink-600)', fontWeight:600 }}>{label}</a>;
+  const link = (label, onClick)=> <Clickable key={label} onClick={onClick} style={{ fontSize:14, color:'var(--ink-600)', fontWeight:600 }}>{label}</Clickable>;
   const social = [['instagram',()=>window.open(IG,'_blank')],['facebook',()=>window.open('https://www.facebook.com/alisa.kids.ua/','_blank')],['send',openDM],['phone',openDM]];
   return (
     <footer style={{ background:'#fff', borderTop:'1px solid var(--ink-100)', marginTop:20 }}>
@@ -159,7 +164,7 @@ function Footer({ nav, tabNav, openDM }) {
             <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:36 }} />
             <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, lineHeight:1.6, margin:'14px 0 16px', maxWidth:260 }}>Сімейний магазин дитячого одягу, взуття та іграшок. 3 магазини у Кам’янському та Дніпрі.</p>
             <div style={{ display:'flex', gap:10 }}>
-              {social.map(s=> <span key={s[0]} onClick={s[1]} style={{ cursor:'pointer', width:40, height:40, borderRadius:'50%', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={s[0]} style={{width:19,height:19,color:'var(--pink-600)'}}></i></span>)}
+              {social.map(s=> <Clickable key={s[0]} onClick={s[1]} label={s[0]} style={{ width:40, height:40, borderRadius:'50%', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={s[0]} style={{width:19,height:19,color:'var(--pink-600)'}} aria-hidden="true"></i></Clickable>)}
             </div>
           </div>
           <div>
@@ -181,10 +186,10 @@ function Footer({ nav, tabNav, openDM }) {
           <div>
             <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)', marginBottom:14 }}>Наші магазини</div>
             {S.STORES.map(s=>(
-              <div key={s.id} onClick={()=>tabNav('stores')} style={{ marginBottom:10, fontSize:13.5, cursor:'pointer' }}>
+              <Clickable key={s.id} onClick={()=>tabNav('stores')} style={{ display:'block', width:'100%', marginBottom:10, fontSize:13.5 }}>
                 <b style={{color:'var(--ink-900)'}}>{s.id} · {s.city}</b>
                 <div style={{ color:'var(--ink-500)', fontWeight:600 }}>{s.addr} · {s.hours}</div>
-              </div>
+              </Clickable>
             ))}
           </div>
         </div>
