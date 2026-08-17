@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Alisa Kids Store — sitemap TEMPLATE.
+
+  The URLs below use the intended production domain (alisa.com.ua) and are therefore
+  NOT live yet. At launch: register the domain, replace the <loc> host if it differs,
+  keep only the pages that actually exist, and submit via Google Search Console.
+
+  ⚠️ Product and category URLs are intentionally absent: the current prototype is a
+  single-page app with no per-page URLs, so those pages cannot be linked or indexed.
+  Adding client-side routing is part of the production build (backlog #10) — once each
+  category/product has its own URL, generate those entries here automatically.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://alisa.com.ua/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/catalog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/sale</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/stores</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/about</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/delivery</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/returns</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://alisa.com.ua/offer</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
