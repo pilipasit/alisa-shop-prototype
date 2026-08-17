@@ -170,10 +170,12 @@ function Footer({ nav, tabNav, openDM }) {
           <div>
             <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)', marginBottom:14 }}>Покупцям</div>
             <div style={{ display:'flex', flexDirection:'column', gap:9 }}>
+              {link('Доставка і оплата', ()=>nav('info',{doc:'delivery'}))}
+              {link('Обмін і повернення', ()=>nav('info',{doc:'returns'}))}
               {link('Таблиця розмірів', ()=>nav('sizeguide'))}
-              {link('Розпродаж', ()=>tabNav('sale'))}
-              {link('Самовивіз', ()=>tabNav('stores'))}
-              {link('Контакти', ()=>tabNav('linkbio'))}
+              {link('Про нас', ()=>nav('info',{doc:'about'}))}
+              {link('Політика конфіденційності', ()=>nav('info',{doc:'privacy'}))}
+              {link('Публічна оферта', ()=>nav('info',{doc:'offer'}))}
               {link('Написати нам', openDM)}
             </div>
           </div>
@@ -340,6 +342,7 @@ function DesktopApp() {
   else if(cur.r==='sale') inner = <Scr.SaleScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='linkbio') inner = <Scr.LinkBioScreen nav={nav} />;
   else if(cur.r==='sizeguide') inner = <Scr.SizeGuide />;
+  else if(cur.r==='info') inner = <Scr.InfoScreen nav={nav} params={cur.p} />;
 
   return (
     <div>

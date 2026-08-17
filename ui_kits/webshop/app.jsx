@@ -38,7 +38,7 @@ function App() {
   const removeItem = (idx)=> setCart(c=>c.filter((_,i)=>i!==idx));
   const placeOrder = ()=>{ nav('confirm'); setCart([]); };
 
-  const TITLES = { catalog:'Каталог', product:'Товар', cart:'Кошик', checkout:'Оформлення', confirm:'Готово', stores:'Магазини', sale:'Розпродаж', linkbio:'Аліса', sizeguide:'Таблиця розмірів' };
+  const TITLES = { catalog:'Каталог', product:'Товар', cart:'Кошик', checkout:'Оформлення', confirm:'Готово', stores:'Магазини', sale:'Розпродаж', linkbio:'Аліса', sizeguide:'Таблиця розмірів', info:'Інформація' };
   const showLogo = cur.r==='home';
   const canBack = stack.length>1;
 
@@ -53,6 +53,7 @@ function App() {
   else if(cur.r==='sale') screen = <Scr.SaleScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='linkbio') screen = <Scr.LinkBioScreen nav={nav} />;
   else if(cur.r==='sizeguide') screen = <SizeGuide />;
+  else if(cur.r==='info') screen = <Scr.InfoScreen nav={nav} params={cur.p} />;
 
   const isBio = cur.r==='linkbio';
 
@@ -205,7 +206,7 @@ function SearchOverlay({ onClose, nav, addToCart }) {
 
 function MenuDrawer({ onClose, nav }) {
   const links = [['Головна','home','home'],['Каталог','layout-grid','catalog'],['Розпродаж','badge-percent','sale'],['Новинки','sparkles','catalog'],['Іграшки','blocks','catalog'],['Магазини','map-pin','stores'],['Контакти / Direct','phone','linkbio']];
-  const info = ['Доставка і оплата','Обмін і повернення','Таблиця розмірів','Про нас'];
+  const info = [['Доставка і оплата',()=>nav('info',{doc:'delivery'})],['Обмін і повернення',()=>nav('info',{doc:'returns'})],['Таблиця розмірів',()=>nav('sizeguide')],['Про нас',()=>nav('info',{doc:'about'})],['Політика конфіденційності',()=>nav('info',{doc:'privacy'})],['Публічна оферта',()=>nav('info',{doc:'offer'})]];
   return (
     <Sheet onClose={onClose} side="left">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
@@ -222,7 +223,7 @@ function MenuDrawer({ onClose, nav }) {
       </div>
       <div style={{ marginTop:18, fontWeight:800, fontSize:12, color:'var(--ink-500)', textTransform:'uppercase', letterSpacing:'.05em' }}>Інформація</div>
       <div style={{ display:'flex', flexDirection:'column', gap:2, marginTop:8 }}>
-        {info.map(t=> <Ud.Clickable key={t} onClick={onClose} style={{ padding:'8px 4px', fontSize:14, fontWeight:600, color:'var(--ink-600)' }}>{t}</Ud.Clickable>)}
+        {info.map(t=> <Ud.Clickable key={t[0]} onClick={t[1]} style={{ padding:'8px 4px', fontSize:14, fontWeight:600, color:'var(--ink-600)' }}>{t[0]}</Ud.Clickable>)}
       </div>
     </Sheet>
   );
