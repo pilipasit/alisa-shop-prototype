@@ -1,0 +1,33 @@
+# Cloudflare Pages response headers — https://developers.cloudflare.com/pages/configuration/headers/
+# These are the headers GitHub Pages could NOT set. They only take effect on Cloudflare Pages.
+
+/*
+  # Force HTTPS for a year. Remove `includeSubDomains` if you ever need a plain-HTTP
+  # subdomain. Add `; preload` only when you're sure — preload is hard to undo.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+  # Don't let browsers guess a file's type (blocks a class of injection tricks).
+  X-Content-Type-Options: nosniff
+
+  # Don't leak the full URL (with query params) to other sites.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Block framing — stops clickjacking / someone embedding the shop in their page.
+  X-Frame-Options: DENY
+
+  # Turn off browser features the shop never uses.
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
+
+  # Same policy as the in-page <meta> CSP, plus the two directives a meta tag cannot express.
+  # ⚠️ 'unsafe-eval' exists ONLY for in-browser Babel. When the production build lands,
+  #    delete 'unsafe-eval', drop https://unpkg.com, and update the <meta> CSP to match.
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+
+# Product photos and logos change rarely — cache them for a week.
+/assets/*
+  Cache-Control: public, max-age=604800
+
+# The shop's code is still being iterated: keep it short so updates appear quickly.
+# (This is also why editing a .jsx needed a hard-refresh on GitHub Pages' 10-minute cache.)
+/ui_kits/*
+  Cache-Control: public, max-age=300, must-revalidate

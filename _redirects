@@ -1,0 +1,23 @@
+# Cloudflare Pages redirects — https://developers.cloudflare.com/pages/configuration/redirects/
+# Format: <from>  <to>  <status>
+#
+# Nothing is redirected yet: while this is a TEST build, the landing page at "/" is a
+# deliberate chooser (mobile / desktop / blueprint) so Uliana can pick a view.
+#
+# ── AT LAUNCH, uncomment the line below so "/" IS the shop instead of the chooser:
+# /    /ui_kits/webshop/index.html    200
+#   (status 200 = rewrite: the shop is served AT "/" and the ugly path stays hidden.
+#    Use 301 instead if you'd rather the browser visibly jump to the long URL.)
+#
+# ── Friendly URLs for the info pages, once the production build adds routing (#10).
+#    They cannot work yet: the app is a single page with no per-URL screens.
+# /dostavka     /ui_kits/webshop/index.html    200
+# /povernennya  /ui_kits/webshop/index.html    200
+# /oferta       /ui_kits/webshop/index.html    200
+#
+# ── The internal handoff document should not be reachable on the public shop:
+# /ui_kits/webshop/blueprint.html    /    302
+#
+# NOTE: sending alisakids.shop → alisakids.com.ua is NOT done here. That is a
+# separate Cloudflare "Redirect Rule" on the alisakids.shop zone (Rules → Redirect Rules),
+# because the redirect happens before it ever reaches this Pages project.

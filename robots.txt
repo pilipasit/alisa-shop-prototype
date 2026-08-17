@@ -1,7 +1,7 @@
 # Alisa Kids Store
 #
 # ⚠️ NOTE ON THIS FILE'S LOCATION: crawlers only read robots.txt from the ROOT of a
-# host (e.g. https://alisa.com.ua/robots.txt). This copy lives under a GitHub Pages
+# host (e.g. https://alisakids.com.ua/robots.txt). This copy lives under a GitHub Pages
 # *project* path, so search engines will NOT read it here — the prototype is kept out
 # of search by <meta name="robots" content="noindex"> in each page instead.
 # This file is the ready-to-use version for the real domain.
@@ -23,4 +23,4 @@ Disallow: /
 # # internal handoff document — not for search
 # Disallow: /ui_kits/webshop/blueprint.html
 #
-# Sitemap: https://alisa.com.ua/sitemap.xml
+# Sitemap: https://alisakids.com.ua/sitemap.xml
