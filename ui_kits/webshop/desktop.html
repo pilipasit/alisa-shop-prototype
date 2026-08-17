@@ -1,6 +1,11 @@
 <!-- @dsCard group="Webshop" viewport="1200x800" name="Web shop — desktop homepage" subtitle="Full homepage: header, hero, categories, carousels, footer" -->
 <!DOCTYPE html>
-<html lang="uk"><head><meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="uk"><head><meta charset="utf8"><!-- Supply-chain hardening. 'unsafe-eval' is required only because this prototype
+     compiles JSX in the browser with Babel; the production build removes both
+     'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
+     via <meta> — they need real response headers (see SECURITY.md). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — дитячий магазин · одяг, взуття, іграшки</title>
 <meta name="description" content="Інтернет-магазин дитячого одягу, взуття та іграшок «Аліса». Кам'янське та Дніпро — 3 магазини. Доставка Новою поштою, самовивіз безкоштовно.">
 <meta name="theme-color" content="#df0380">
@@ -73,11 +78,11 @@
   <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#df0380"/><rect x="18" y="26" width="64" height="48" rx="6" fill="#fff"/><rect x="18" y="26" width="64" height="11" rx="6" fill="#0cb0e3"/></svg>
 </template>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="../../_ds_bundle.js"></script>
-<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
 <script type="text/babel" data-presets="react" src="data.jsx"></script>
 <script type="text/babel" data-presets="react" src="ui.jsx"></script>
 <script type="text/babel" data-presets="react" src="screens1.jsx"></script>

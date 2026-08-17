@@ -1,6 +1,11 @@
 <!-- @startingPoint section="Webshop" subtitle="Web shop blueprint: sitemap, flows, MVP plan" viewport="900x1200" -->
 <!DOCTYPE html>
-<html lang="uk"><head><meta charset="utf8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="uk"><head><meta charset="utf8"><!-- Supply-chain hardening. 'unsafe-eval' is required only because this prototype
+     compiles JSX in the browser with Babel; the production build removes both
+     'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
+     via <meta> — they need real response headers (see SECURITY.md). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — Web shop blueprint</title>
 <link rel="stylesheet" href="../../styles.css">
 <style>
@@ -234,6 +239,6 @@
     <p style="margin:0;font-weight:700;color:var(--pink-700)">Principle: keep it operable by a small family team. Add complexity only when sales volume justifies the extra work.</p>
   </div>
 </div>
-<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
 <script>window.lucide&&lucide.createIcons();</script>
 </body></html>

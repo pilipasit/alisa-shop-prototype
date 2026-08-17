@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="uk"><head><meta charset="utf-8">
+<!-- Supply-chain hardening. 'unsafe-eval' is required only because this prototype
+     compiles JSX in the browser with Babel; the production build removes both
+     'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
+     via <meta> — they need real response headers (see SECURITY.md). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — дитячий магазин (прототип)</title>
 <meta name="description" content="Прототип інтернет-магазину дитячого одягу, взуття та іграшок «Аліса». Кам'янське · Дніпро.">
@@ -93,6 +98,6 @@
     </a>
   </div>
   </main>
-<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
 <script>window.lucide&&lucide.createIcons();</script>
 </body></html>
