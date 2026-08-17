@@ -5,6 +5,10 @@ const { Button, Badge, Tag, IconButton, Input, Notice, Card } = window.AlisaKids
 const { AV_LABEL } = window.AlisaShop;
 
 const C500 = { blue:'var(--blue-500)', green:'var(--green-500)', yellow:'var(--yellow-400)', pink:'var(--pink-500)', pinkDeep:'var(--pink-600)', gray:'var(--ink-400)' };
+/* Surface colors safe to put WHITE text on (WCAG AA). The bright logo blue/green
+   only reach 2.5:1 / 3.7:1 against white, so filled panels use the -600 shades.
+   Yellow keeps dark ink text instead. Measured: blue-600 4.56, green-600 5.44, pink-500 4.71. */
+const CSURF = { blue:'var(--blue-600)', green:'var(--green-600)', yellow:'var(--yellow-400)', pink:'var(--pink-500)', pinkDeep:'var(--pink-600)', gray:'var(--ink-500)' };
 const C100 = { blue:'var(--blue-100)', green:'var(--green-100)', yellow:'var(--yellow-100)', pink:'var(--pink-100)', pinkDeep:'var(--pink-100)', gray:'var(--ink-100)' };
 const C600 = { blue:'var(--blue-600)', green:'var(--green-600)', yellow:'var(--yellow-600)', pink:'var(--pink-600)', pinkDeep:'var(--pink-600)', gray:'var(--ink-500)' };
 
@@ -24,6 +28,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
 .a-skip{position:absolute;left:-9999px;top:0;z-index:200}
 .a-skip:focus{left:10px;top:10px;background:#fff;color:var(--pink-600);padding:10px 18px;
   border-radius:var(--radius-pill);font-weight:800;font-size:14px;box-shadow:var(--shadow-md)}
+/* Contrast fix for the DS badge palette: white on the bright logo green is 3.66:1 and on the
+   logo blue only 2.52:1 — both fail AA at badge text size. The deeper -600 shades pass
+   (green-600 5.44, blue-600 4.56). !important because the bundle injects its own rule later
+   at equal specificity. */
+.alisa-badge.solid.new{background:var(--green-600) !important}
+.alisa-badge.solid.info{background:var(--blue-600) !important}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 `;
   document.head.appendChild(s);
@@ -82,7 +92,7 @@ function StoreDots({ av, compact = false }) {
 function Price({ p, size = 28 }) {
   return (
     <div style={{ display:'flex', alignItems:'baseline', gap:8, flexWrap:'wrap' }}>
-      {p.oldPrice && <span style={{ fontWeight:800, fontSize:size*0.52, color:'var(--ink-400)', textDecoration:'line-through', textDecorationColor:'var(--pink-400)', whiteSpace:'nowrap' }}>{p.oldPrice} ₴</span>}
+      {p.oldPrice && <span style={{ fontWeight:800, fontSize:size*0.52, color:'var(--ink-500)', textDecoration:'line-through', textDecorationColor:'var(--pink-400)', whiteSpace:'nowrap' }}>{p.oldPrice} ₴</span>}
       <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:size, color: p.oldPrice?'var(--pink-600)':'var(--ink-900)', lineHeight:.9, whiteSpace:'nowrap' }}>{p.price} ₴</span>
     </div>
   );
@@ -94,7 +104,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
   const anyIn = Object.values(p.av).some(s => s==='in');
   const anyLast = !anyIn && Object.values(p.av).some(s => s==='last');
   const statusLabel = anyIn ? 'В наявності' : anyLast ? 'Останній розмір' : 'Немає в наявності';
-  const statusColor = anyIn ? 'var(--green-600)' : anyLast ? 'var(--yellow-600)' : 'var(--ink-400)';
+  const statusColor = anyIn ? 'var(--green-600)' : anyLast ? 'var(--ink-700)' : 'var(--ink-500)';
   return (
     <div style={{ background:'#fff', borderRadius:'var(--radius-lg)', border:'1px solid var(--ink-100)', boxShadow:'var(--shadow-sm)',
       overflow:'hidden', display:'flex', flexDirection:'column', position:'relative' }}>
@@ -107,7 +117,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
       </div>
       <div style={{ padding:'4px 12px 14px', display:'flex', flexDirection:'column', flex:1 }}>
         <div onClick={onOpen} style={{ cursor:'pointer', fontWeight:800, fontSize:15, color:'var(--ink-900)', lineHeight:1.25, minHeight:38 }}>{p.name}</div>
-        <div style={{ fontSize:11.5, color:'var(--ink-400)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.id} · {p.ages!=='one'&&p.ages!=='0+'?'розм. ':''}{p.ages==='one'?'один розмір':p.ages}</div>
+        <div style={{ fontSize:11.5, color:'var(--ink-500)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.id} · {p.ages!=='one'&&p.ages!=='0+'?'розм. ':''}{p.ages==='one'?'один розмір':p.ages}</div>
         <Price p={p} size={24} />
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:6, flexWrap:'wrap', margin:'10px 0 12px' }}>
           <span style={{ fontSize:12, fontWeight:800, color:statusColor }}>{statusLabel}</span>
@@ -125,7 +135,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
 function SectionHead({ title, action, onAction }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', margin:'0 0 12px' }}>
-      <h3 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>{title}</h3>
+      <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>{title}</h2>
       {action && <Clickable onClick={onAction} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', whiteSpace:'nowrap' }}>{action} →</Clickable>}
     </div>
   );
@@ -144,11 +154,11 @@ function PromoBanner({ color='pink', kicker, title, sub, cta, icon, onClick }) {
   const dark = color==='yellow';
   const fg = dark ? 'var(--ink-900)' : '#fff';
   return (
-    <Clickable onClick={onClick} style={{ display:'block', width:'100%', position:'relative', overflow:'hidden', borderRadius:'var(--radius-lg)', background:C500[color], color:fg, padding:'20px 22px', boxShadow:'var(--shadow-sm)' }}>
+    <Clickable onClick={onClick} style={{ display:'block', width:'100%', position:'relative', overflow:'hidden', borderRadius:'var(--radius-lg)', background:CSURF[color], color:fg, padding:'20px 22px', boxShadow:'var(--shadow-sm)' }}>
       <div style={{ position:'absolute', width:150, height:150, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
       {kicker && <div style={{ position:'relative', fontWeight:800, fontSize:12, textTransform:'uppercase', letterSpacing:'.05em', opacity:.92 }}>{kicker}</div>}
       <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, lineHeight:1.02, margin:'4px 0 2px' }}>{title}</div>
-      {sub && <div style={{ position:'relative', fontWeight:600, fontSize:14, opacity:.95 }}>{sub}</div>}
+      {sub && <div style={{ position:'relative', fontWeight:600, fontSize:14 }}>{sub}</div>}
       {cta && <div style={{ position:'relative', marginTop:14, display:'inline-flex', alignItems:'center', gap:6, background:dark?'var(--ink-900)':'#fff', color:dark?'#fff':C600[color], fontWeight:700, fontSize:14, padding:'9px 16px', borderRadius:'var(--radius-pill)' }}>{cta} <i data-lucide="arrow-right" style={{width:15,height:15}}></i></div>}
     </Clickable>
   );
@@ -165,12 +175,12 @@ function FilterChip({ label, active, onClick, color }) {
 
 function Breadcrumbs({ items }) {
   return (
-    <nav aria-label="Навігація по сайту" style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize:12.5, color:'var(--ink-400)', fontWeight:700, marginBottom:10 }}>
+    <nav aria-label="Навігація по сайту" style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize:12.5, color:'var(--ink-500)', fontWeight:700, marginBottom:10 }}>
       {items.map((it,i)=>(
         <React.Fragment key={i}>
           {i>0 && <i data-lucide="chevron-right" style={{width:13,height:13}} aria-hidden="true"></i>}
           {it.onClick
-            ? <Clickable onClick={it.onClick} style={{ color:'var(--ink-400)', textDecoration:'underline' }}>{it.label}</Clickable>
+            ? <Clickable onClick={it.onClick} style={{ color:'var(--ink-500)', textDecoration:'underline' }}>{it.label}</Clickable>
             : <span aria-current="page" style={{ color:'var(--ink-700)' }}>{it.label}</span>}
         </React.Fragment>
       ))}
@@ -200,7 +210,7 @@ function StoreCard({ s, av, onReserve }) {
           <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600 }}>{s.area}</div>
         </div>
       </div>
-      <div style={{ aspectRatio:'16/7', background:'var(--ink-100)', borderRadius:'var(--radius-md)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--ink-300)', gap:6, marginBottom:12 }}>
+      <div style={{ aspectRatio:'16/7', background:'var(--ink-100)', borderRadius:'var(--radius-md)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--ink-500)', gap:6, marginBottom:12 }}>
         <i data-lucide="map-pin" style={{width:22,height:22}}></i><span style={{fontWeight:700,fontSize:12}}>Мапа</span>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:7, fontSize:13.5, color:'var(--ink-700)', fontWeight:600 }}>
@@ -212,13 +222,13 @@ function StoreCard({ s, av, onReserve }) {
         <div style={{ marginTop:12 }}>
           {st!=='out'
             ? <Button variant="primary" size="sm" fullWidth onClick={onReserve}>{st==='last'?'Останній — забронювати':'Забронювати тут'}</Button>
-            : <div style={{ fontWeight:700, fontSize:13, color:'var(--ink-400)', textAlign:'center', padding:'8px 0' }}>Немає в цьому магазині</div>}
+            : <div style={{ fontWeight:700, fontSize:13, color:'var(--ink-500)', textAlign:'center', padding:'8px 0' }}>Немає в цьому магазині</div>}
         </div>
       )}
     </div>
   );
 }
 
-window.AlisaUI = { Icon, Clickable, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
+window.AlisaUI = { Icon, Clickable, CSURF, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
 
 })();

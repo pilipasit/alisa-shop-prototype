@@ -5,7 +5,7 @@ const { Button, Badge, IconButton, Input } = DS;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
 const Scr = window.AlisaScreens;
-const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, C500, C100, C600, Icon } = U;
+const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, CSURF, C500, C100, C600, Icon } = U;
 const I = Icon;
 const IG = 'https://www.instagram.com/alisa.kids.shop/';
 
@@ -59,7 +59,7 @@ function Hero({ nav, tabNav }) {
         <div style={{ position:'relative' }}>
           <Badge tone="warning" size="lg">Зимовий сезон</Badge>
           <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:54, lineHeight:.98, margin:'16px 0 12px', letterSpacing:'-0.02em' }}>Тепло для<br/>найменших</h1>
-          <p style={{ fontSize:18, fontWeight:600, opacity:.95, maxWidth:380, margin:'0 0 24px' }}>Знижки до 50% на зимовий одяг, взуття та аксесуари у магазинах «Аліса».</p>
+          <p style={{ fontSize:18, fontWeight:600, maxWidth:380, margin:'0 0 24px' }}>Знижки до 50% на зимовий одяг, взуття та аксесуари у магазинах «Аліса».</p>
           <div style={{ display:'flex', gap:12 }}>
             <Button variant="sale" size="lg" onClick={()=>nav('sale')}>Перейти до знижок</Button>
             <Button variant="secondary" size="lg" onClick={()=>nav('catalog',{filter:'new'})} style={{background:'#fff'}}>Новинки</Button>
@@ -67,16 +67,16 @@ function Hero({ nav, tabNav }) {
         </div>
       </div>
       <div style={{ display:'grid', gridTemplateRows:'1fr 1fr', gap:24 }}>
-        <div style={{ position:'relative', overflow:'hidden', background:'var(--blue-500)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'30px 32px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+        <div style={{ position:'relative', overflow:'hidden', background:'var(--blue-600)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'30px 32px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
           <div style={{ position:'absolute', width:160, height:160, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
           <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:28 }}>Нова колекція</div>
-          <div style={{ position:'relative', fontWeight:600, fontSize:15, opacity:.95, margin:'2px 0 14px' }}>Весна 2026 вже у продажу</div>
+          <div style={{ position:'relative', fontWeight:600, fontSize:15, margin:'2px 0 14px' }}>Весна 2026 вже у продажу</div>
           <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{filter:'new'})} style={{background:'#fff'}}>Дивитися →</Button></div>
         </div>
-        <div style={{ position:'relative', overflow:'hidden', background:'var(--green-500)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'30px 32px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+        <div style={{ position:'relative', overflow:'hidden', background:'var(--green-600)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'30px 32px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
           <div style={{ position:'absolute', width:160, height:160, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
           <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:28 }}>Іграшка тижня</div>
-          <div style={{ position:'relative', fontWeight:600, fontSize:15, opacity:.95, margin:'2px 0 14px' }}>−30% на конструктори</div>
+          <div style={{ position:'relative', fontWeight:600, fontSize:15, margin:'2px 0 14px' }}>−30% на конструктори</div>
           <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{cat:'toys'})} style={{background:'#fff'}}>Дивитися →</Button></div>
         </div>
       </div>
@@ -112,7 +112,7 @@ function DesktopHome({ nav, tabNav, addToCart }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:14, marginBottom:42 }}>
         {S.CATS.map(c=>(
           <Clickable key={c.id} onClick={()=>c.id==='sale'?tabNav('sale'):nav('catalog',{cat:c.id})} style={{ textAlign:'center', display:'block', width:'100%' }}>
-            <div style={{ aspectRatio:'1/1', background:C500[c.color], color:c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10, position:'relative', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
+            <div style={{ aspectRatio:'1/1', background:CSURF[c.color], color:c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10, position:'relative', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
               <div style={{ position:'absolute', width:60, height:60, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-14, bottom:-18 }}></div>
               <i data-lucide={c.icon} style={{ width:34, height:34, position:'relative' }} aria-hidden="true"></i>
             </div>
@@ -193,7 +193,7 @@ function Footer({ nav, tabNav, openDM }) {
             ))}
           </div>
         </div>
-        <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:28, paddingTop:18, display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-400)', fontWeight:600 }}>
+        <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:28, paddingTop:18, display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-500)', fontWeight:600 }}>
           <span>© 2026 Магазин «Аліса». Усі права захищені.</span>
           <span>Зроблено з ♥ для родин</span>
         </div>
@@ -343,10 +343,13 @@ function DesktopApp() {
 
   return (
     <div>
+      <a href="#main" className="a-skip">Перейти до вмісту</a>
       <Header nav={nav} tabNav={tabNav} cartCount={cartCount} openSearch={()=>setOverlay('search')} />
-      {cur.r==='home'
-        ? <DesktopHome nav={nav} tabNav={tabNav} addToCart={addToCart} />
-        : <div style={{ maxWidth:920, margin:'0 auto', padding:'28px 24px 56px' }}>{inner}</div>}
+      <main id="main">
+        {cur.r==='home'
+          ? <DesktopHome nav={nav} tabNav={tabNav} addToCart={addToCart} />
+          : <div style={{ maxWidth:920, margin:'0 auto', padding:'28px 24px 56px' }}>{inner}</div>}
+      </main>
       <Footer nav={nav} tabNav={tabNav} openDM={openDM} />
 
       {toast && <div style={{ position:'fixed', left:'50%', transform:'translateX(-50%)', bottom:28, zIndex:70, background:'var(--ink-900)', color:'#fff', borderRadius:'var(--radius-pill)', padding:'12px 20px', fontWeight:700, fontSize:14, display:'flex', alignItems:'center', gap:9, boxShadow:'var(--shadow-lg)' }}><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}

@@ -58,6 +58,7 @@ function App() {
 
   return (
     <div className="phone">
+      <a href="#main" className="a-skip">Перейти до вмісту</a>
       <div className="statusbar"><span>9:41</span><span style={{display:'flex',gap:5,alignItems:'center'}}><i data-lucide="signal" style={{width:15,height:15}}></i><i data-lucide="wifi" style={{width:15,height:15}}></i><i data-lucide="battery-full" style={{width:19,height:15}}></i></span></div>
 
       {/* header */}
@@ -80,7 +81,7 @@ function App() {
       )}
 
       {/* scroll area */}
-      <main className="appscroll" ref={scrollRef} style={isBio?{padding:'18px 18px 90px'}:{}}>
+      <main id="main" className="appscroll" ref={scrollRef} style={isBio?{padding:'18px 18px 90px'}:{}}>
         {screen}
       </main>
 
@@ -219,7 +220,7 @@ function MenuDrawer({ onClose, nav }) {
           </button>
         ))}
       </div>
-      <div style={{ marginTop:18, fontWeight:800, fontSize:12, color:'var(--ink-400)', textTransform:'uppercase', letterSpacing:'.05em' }}>Інформація</div>
+      <div style={{ marginTop:18, fontWeight:800, fontSize:12, color:'var(--ink-500)', textTransform:'uppercase', letterSpacing:'.05em' }}>Інформація</div>
       <div style={{ display:'flex', flexDirection:'column', gap:2, marginTop:8 }}>
         {info.map(t=> <Ud.Clickable key={t} onClick={onClose} style={{ padding:'8px 4px', fontSize:14, fontWeight:600, color:'var(--ink-600)' }}>{t}</Ud.Clickable>)}
       </div>

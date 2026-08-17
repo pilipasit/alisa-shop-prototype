@@ -4,7 +4,7 @@
 const { Button: B2, Badge: Bg2, Input: In2, Notice: No2, IconButton: Ib2 } = window.AlisaKidsStoreDesignSystem_194dcf;
 const S2 = window.AlisaShop;
 const U2 = window.AlisaUI;
-const { Icon: Ic, Clickable: Clk, Photo: Ph, ProductCard: PC2, SectionHead: SH2, HScroll: HS2, PromoBanner: PB2, StoreCard, Breadcrumbs: BC2, Qty: Qty2, Price: Pr2, C500: c5, C100: c1, C600: c6 } = U2;
+const { Icon: Ic, Clickable: Clk, CSURF: CS, Photo: Ph, ProductCard: PC2, SectionHead: SH2, HScroll: HS2, PromoBanner: PB2, StoreCard, Breadcrumbs: BC2, Qty: Qty2, Price: Pr2, C500: c5, C100: c1, C600: c6 } = U2;
 
 /* ---------------- CART ---------------- */
 function CartScreen({ nav, cart, setQty, removeItem }) {
@@ -28,7 +28,7 @@ function CartScreen({ nav, cart, setQty, removeItem }) {
             <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} src={it.p.img} alt={it.p.name} /></div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:800, fontSize:14.5, color:'var(--ink-900)', lineHeight:1.2 }}>{it.p.name}</div>
-              <div style={{ fontSize:12, color:'var(--ink-400)', fontWeight:700, margin:'2px 0 8px' }}>Арт. {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
+              <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:700, margin:'2px 0 8px' }}>Арт. {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                 <Pr2 p={it.p} size={20} />
                 <Ib2 aria-label="Прибрати" variant="ghost" size="sm" onClick={()=>removeItem(idx)}>{Ic('trash-2')}</Ib2>
@@ -134,8 +134,8 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
         {steps.map((s,i)=>(
           <React.Fragment key={i}>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
-              <div style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:14, background: i<=step?'var(--pink-500)':'#fff', color:i<=step?'#fff':'var(--ink-400)', border:'2px solid '+(i<=step?'var(--pink-500)':'var(--ink-200)') }}>{i<step?'✓':i+1}</div>
-              <span style={{ fontSize:11, fontWeight:700, color:i<=step?'var(--ink-900)':'var(--ink-400)' }}>{s}</span>
+              <div style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:14, background: i<=step?'var(--pink-500)':'#fff', color:i<=step?'#fff':'var(--ink-500)', border:'2px solid '+(i<=step?'var(--pink-500)':'var(--ink-200)') }}>{i<step?'✓':i+1}</div>
+              <span style={{ fontSize:11, fontWeight:700, color:i<=step?'var(--ink-900)':'var(--ink-500)' }}>{s}</span>
             </div>
             {i<steps.length-1 && <div style={{ flex:1, height:2, background:i<step?'var(--pink-500)':'var(--ink-200)', margin:'0 6px', marginBottom:18 }}></div>}
           </React.Fragment>
@@ -282,7 +282,7 @@ function SaleScreen({ nav, addToCart }) {
         <div style={{ position:'absolute', width:180, height:180, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.14)', right:-50, bottom:-60 }}></div>
         <Bg2 tone="warning" size="lg">Розпродаж</Bg2>
         <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:32, margin:'12px 0 6px', letterSpacing:'-0.02em', position:'relative' }}>Знижки до −50%</h1>
-        <p style={{ fontSize:14.5, fontWeight:600, opacity:.95, margin:0, maxWidth:260, position:'relative' }}>Звільняємо місце для нового сезону. Гарні речі за приємними цінами.</p>
+        <p style={{ fontSize:14.5, fontWeight:600, margin:0, maxWidth:260, position:'relative' }}>Звільняємо місце для нового сезону. Гарні речі за приємними цінами.</p>
       </div>
 
       <SH2 title="За ціною" />
@@ -322,11 +322,11 @@ function LinkBioScreen({ nav }) {
     <div style={{ textAlign:'center' }}>
       <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:54, margin:'8px 0 6px' }} />
       <div style={{ fontWeight:700, fontSize:15, color:'var(--ink-500)' }}>Дитячий магазин «Аліса»</div>
-      <div style={{ fontSize:13, color:'var(--ink-400)', fontWeight:600, margin:'2px 0 18px' }}>Кам’янське · Дніпро · 3 магазини</div>
+      <div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, margin:'2px 0 18px' }}>Кам’янське · Дніпро · 3 магазини</div>
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16 }}>
         {blocks.map(b=>(
-          <Clk key={b[0]} onClick={b[3]} style={{ background:c5[b[2]], color:b[2]==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'20px 12px', display:'flex', flexDirection:'column', alignItems:'center', gap:8, boxShadow:'var(--shadow-sm)', position:'relative', overflow:'hidden' }}>
+          <Clk key={b[0]} onClick={b[3]} style={{ background:CS[b[2]], color:b[2]==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'20px 12px', display:'flex', flexDirection:'column', alignItems:'center', gap:8, boxShadow:'var(--shadow-sm)', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', width:70, height:70, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-16, bottom:-22 }}></div>
             <i data-lucide={b[1]} style={{ width:30, height:30, position:'relative' }} aria-hidden="true"></i>
             <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16, position:'relative' }}>{b[0]}</span>

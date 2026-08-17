@@ -4,7 +4,7 @@
 const { Button, Badge, Tag, IconButton, Input, Notice } = window.AlisaKidsStoreDesignSystem_194dcf;
 const S = window.AlisaShop;
 const U = window.AlisaUI;
-const { Icon, Clickable, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
+const { Icon, Clickable, CSURF, Photo, ProductCard, SectionHead, HScroll, PromoBanner, Breadcrumbs, Qty, StoreDots, Price, C500, C100, C600, disc } = U;
 
 /* ---------------- HOME ---------------- */
 function HomeScreen({ nav, addToCart }) {
@@ -16,7 +16,7 @@ function HomeScreen({ nav, addToCart }) {
         <div style={{ position:'absolute', width:200, height:200, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.14)', right:-60, top:-70 }}></div>
         <Badge tone="warning" size="lg">Зимовий сезон</Badge>
         <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:34, lineHeight:1.0, margin:'12px 0 8px', letterSpacing:'-0.02em', position:'relative' }}>Тепло для<br/>найменших</h1>
-        <p style={{ fontSize:15, fontWeight:600, opacity:.95, margin:'0 0 16px', maxWidth:240, position:'relative' }}>Знижки до 50% на зимовий одяг та взуття у магазинах «Аліса».</p>
+        <p style={{ fontSize:15, fontWeight:600, margin:'0 0 16px', maxWidth:240, position:'relative' }}>Знижки до 50% на зимовий одяг та взуття у магазинах «Аліса».</p>
         <Button variant="sale" onClick={()=>nav('catalog',{cat:'sale'})}>Перейти до знижок</Button>
       </div>
 
@@ -24,7 +24,7 @@ function HomeScreen({ nav, addToCart }) {
       <SectionHead title="Категорії" />
       <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
         {cats.map(c=>(
-          <Clickable key={c.id} onClick={()=>nav('catalog',{cat:c.id})} style={{ position:'relative', overflow:'hidden', background:C500[c.color], color: c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'16px 16px 18px', minHeight:84, display:'flex', flexDirection:'column', justifyContent:'space-between', boxShadow:'var(--shadow-sm)' }}>
+          <Clickable key={c.id} onClick={()=>nav('catalog',{cat:c.id})} style={{ position:'relative', overflow:'hidden', background:CSURF[c.color], color: c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', padding:'16px 16px 18px', minHeight:84, display:'flex', flexDirection:'column', justifyContent:'space-between', boxShadow:'var(--shadow-sm)' }}>
             <div style={{ position:'absolute', width:90, height:90, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.18)', right:-22, bottom:-30 }}></div>
             <i data-lucide={c.icon} style={{ width:30, height:30, strokeWidth:2, position:'relative' }} aria-hidden="true"></i>
             <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:19, position:'relative' }}>{c.uk}</span>
@@ -59,7 +59,7 @@ function HomeScreen({ nav, addToCart }) {
         <div style={{ width:48, height:48, borderRadius:'var(--radius-md)', background:'var(--blue-500)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', flex:'none' }}><i data-lucide="store" style={{width:24,height:24}}></i></div>
         <div style={{ flex:1 }}>
           <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)' }}>Можна забрати у магазині</div>
-          <div style={{ fontSize:13, color:'var(--blue-600)', fontWeight:600 }}>3 магазини · А-1 · А-2 · А-3</div>
+          <div style={{ fontSize:13, color:'var(--ink-700)', fontWeight:600 }}>3 магазини · А-1 · А-2 · А-3</div>
         </div>
         <IconButton aria-label="Магазини" variant="soft" onClick={()=>nav('stores')}>{Icon('chevron-right')}</IconButton>
       </div>
@@ -139,7 +139,7 @@ function CatalogScreen({ nav, addToCart, params, openFilters }) {
       <PromoBanner color="pinkDeep" kicker="Тільки до неділі" title="Розпродаж −50%" cta="Дивитися" onClick={()=>nav('sale')} />
       <div style={{ height:16 }}></div>
 
-      <div style={{ fontSize:13, color:'var(--ink-400)', fontWeight:700, marginBottom:12 }}>{sorted.length} товарів</div>
+      <div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:700, marginBottom:12 }}>{sorted.length} товарів</div>
       {sorted.length === 0 ? (
         <EmptyState nav={nav} />
       ) : (
@@ -194,7 +194,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
       </div>
 
       <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:25, margin:'4px 0 4px', color:'var(--ink-900)', lineHeight:1.1 }}>{p.name}</h1>
-      <div style={{ fontSize:12.5, color:'var(--ink-400)', fontWeight:700, marginBottom:12 }}>Арт. {p.id}</div>
+      <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:700, marginBottom:12 }}>Арт. {p.id}</div>
       <Price p={p} size={34} />
 
       {/* size selector */}
@@ -227,7 +227,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
         <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)', marginBottom:12, display:'flex', alignItems:'center', gap:8 }}><i data-lucide="store" style={{width:18,height:18,color:'var(--pink-500)'}}></i>Наявність у магазинах</div>
         {S.STORES.map(s=>{
           const st = p.av[s.id]; const lbl = S.AV_LABEL[st];
-          const c = st==='in'?'var(--green-600)':st==='last'?'var(--yellow-600)':'var(--ink-400)';
+          const c = st==='in'?'var(--green-600)':st==='last'?'var(--ink-700)':'var(--ink-500)';
           return (
             <div key={s.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 0', borderBottom:'1px solid var(--ink-100)' }}>
               <div><span style={{fontWeight:800,fontSize:14,color:'var(--ink-900)'}}>{s.id}</span> <span style={{fontSize:12.5,color:'var(--ink-500)',fontWeight:600}}>· {s.city}, {s.area.split('·')[0]}</span></div>
