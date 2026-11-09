@@ -9,11 +9,47 @@ const { Photo, ProductCard, PromoBanner, FilterChip, Clickable, CSURF, Stars, De
 const I = Icon;
 const IG = 'https://www.instagram.com/alisa.kids.shop/';
 
-/* nav items → routes */
-const NAV = [
-  ['Каталог','catalog',{}],['Одяг','catalog',{cat:'clothing'}],['Взуття','catalog',{cat:'shoes'}],
-  ['Іграшки','catalog',{cat:'toys'}],['Сезонне','catalog',{cat:'seasonal'}],['Школа','catalog',{cat:'school'}],['Розпродаж','sale',{}],
-];
+/* nav items → routes. With the showcase the curated collections come first; "Розпродаж" only when there is one. */
+const NAV = [['Каталог','catalog',{}]]
+  .concat(S.COLLECTIONS.map(c => [c.short, 'catalog', { col:c.id }]))
+  .concat([['Взуття','catalog',{cat:'shoes'}],['Одяг','catalog',{cat:'clothing'}],['Іграшки','catalog',{cat:'toys'}]])
+  .concat(S.SOURCE.kind === 'demo' ? [['Сезонне','catalog',{cat:'seasonal'}],['Школа','catalog',{cat:'school'}]] : [])
+  .concat(S.onSale().length ? [['Розпродаж','sale',{}]] : []);
+
+/* the cart survives a reload; same storage key as the mobile prototype */
+const CART_KEY = 'alisa.cart.' + S.SOURCE.kind;
+function loadCart() { try { const c = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); return Array.isArray(c) ? c.filter(i => i && i.p && i.qty > 0) : []; } catch (_) { return []; } }
+function saveCart(c) { try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch (_) {} }
+
+/* dialogs: Esc closes, focus goes in and comes back */
+function useDialog(onClose) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const prev = document.activeElement, el = ref.current;
+    if (el) { const f = el.querySelector('input,button,[tabindex]:not([tabindex="-1"])'); (f || el).focus(); }
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); if (prev && prev.focus) prev.focus(); };
+  }, []);
+  return ref;
+}
+
+/* responsive layout rules (the prototype is inline-styled; these few classes make it fold on tablets) */
+(function(){
+  if (document.getElementById('alisa-desk-css')) return;
+  const st = document.createElement('style'); st.id = 'alisa-desk-css';
+  st.textContent = `
+.d-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+.d-hero{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;margin-bottom:28px}
+.d-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px;margin-bottom:42px}
+.d-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.d-foot{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:32px}
+.d-nav{display:flex;gap:4px;overflow-x:auto}
+@media (max-width:980px){.d-hero{grid-template-columns:1fr}.d-4{grid-template-columns:repeat(2,1fr)}.d-foot{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.d-4,.d-foot{grid-template-columns:1fr}.d-top-hide{display:none !important}}
+`;
+  document.head.appendChild(st);
+})();
 
 /* ---------------- HEADER ---------------- */
 function Header({ nav, tabNav, cartCount, openSearch }) {
@@ -21,8 +57,8 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
     <header style={{ position:'sticky', top:0, zIndex:20, background:'#fff', boxShadow:'var(--shadow-sm)' }}>
       <div style={{ background:'var(--pink-500)', color:'#fff', fontSize:13, fontWeight:700 }}>
         <div style={{ maxWidth:1200, margin:'0 auto', padding:'7px 24px', display:'flex', justifyContent:'space-between' }}>
-          <span style={{display:'flex',alignItems:'center',gap:7}}><i data-lucide="truck" style={{width:15,height:15}}></i>Доставка Новою поштою · самовивіз з магазину безкоштовно</span>
-          <span style={{display:'flex',gap:18}}><span style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}} onClick={()=>tabNav('stores')}><i data-lucide="map-pin" style={{width:14,height:14}}></i>3 магазини</span><span style={{display:'flex',alignItems:'center',gap:6}}><a href="tel:+380988222964" style={{color:'#fff',textDecoration:'none',display:'flex',alignItems:'center',gap:6}}><i data-lucide="phone" style={{width:14,height:14}}></i>{S.PHONE}</a></span></span>
+          <span style={{display:'flex',alignItems:'center',gap:7}}><i data-lucide="package-check" style={{width:15,height:15}} aria-hidden="true"></i>Резерв онлайн · самовивіз безкоштовно з 3 магазинів</span>
+          <span className="d-top-hide" style={{display:'flex',gap:18}}><Clickable onClick={()=>tabNav('stores')} style={{display:'flex',alignItems:'center',gap:6,color:'#fff'}}><i data-lucide="map-pin" style={{width:14,height:14}} aria-hidden="true"></i>3 магазини</Clickable><span style={{display:'flex',alignItems:'center',gap:6}}><a href="tel:+380988222964" style={{color:'#fff',textDecoration:'none',display:'flex',alignItems:'center',gap:6}}><i data-lucide="phone" style={{width:14,height:14}}></i>{S.PHONE}</a></span></span>
         </div>
       </div>
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'16px 24px', display:'flex', alignItems:'center', gap:26 }}>
@@ -33,14 +69,13 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
             onKeyDown={e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSearch(); } }} style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', fontFamily:'var(--font-body)', fontWeight:600, fontSize:15, outline:'none', cursor:'pointer', background:'#fff' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-          <IconButton aria-label="Бажане" variant="ghost" onClick={()=>window.open(IG,'_blank')}><i data-lucide="heart"></i></IconButton>
-          <Button variant="primary" icon={<i data-lucide="shopping-bag"></i>} onClick={()=>tabNav('cart')}>Кошик{cartCount>0?` · ${cartCount}`:''}</Button>
+          <Button variant="primary" icon={<i data-lucide="shopping-bag" aria-hidden="true"></i>} onClick={()=>tabNav('cart')}>Кошик{cartCount>0?` · ${cartCount}`:''}</Button>
         </div>
       </div>
-      <nav style={{ borderTop:'1px solid var(--ink-100)' }}>
-        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', display:'flex', gap:4 }}>
+      <nav aria-label="Розділи магазину" style={{ borderTop:'1px solid var(--ink-100)' }}>
+        <div className="d-nav" style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px' }}>
           {NAV.map((n,i)=>(
-            <Clickable key={n[0]} onClick={()=>n[1]==='sale'?tabNav('sale'):tabNav('catalog',n[2])} style={{ padding:'13px 16px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:i===6?'var(--pink-600)':'var(--ink-700)', display:'flex', alignItems:'center', gap:7 }}>
+            <Clickable key={n[0]} onClick={()=>n[1]==='sale'?tabNav('sale'):tabNav('catalog',n[2])} style={{ padding:'13px 16px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, whiteSpace:'nowrap', color:(n[2]&&n[2].col)||n[1]==='sale'?'var(--pink-600)':'var(--ink-700)', display:'flex', alignItems:'center', gap:7 }}>
               {i===0 && <i data-lucide="layout-grid" style={{width:17,height:17}} aria-hidden="true"></i>}{n[0]}
             </Clickable>
           ))}
@@ -51,9 +86,49 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
 }
 
 /* ---------------- HOME (rich desktop landing) ---------------- */
+/* hero for the showcase: winter on the left, gifts and the New Year matinee on the right, each with an illustration */
+function ShowcaseHero({ nav }) {
+  const pic = (id) => { const p = S.byId(id); return p && p.img ? p : null; };
+  const side = (c, color, picId) => { const p = pic(picId); return (
+    <Clickable onClick={()=>nav('catalog',{col:c.id})} style={{ position:'relative', overflow:'hidden', background:CSURF[color], color:'#fff', borderRadius:'var(--radius-xl)', padding:'26px 28px', display:'flex', alignItems:'center', gap:18, minHeight:150, width:'100%', boxSizing:'border-box' }}>
+      <div style={{ flex:1, position:'relative' }}>
+        <div style={{ fontWeight:800, fontSize:12, textTransform:'uppercase', letterSpacing:'.05em' }}>{c.id==='gifts' ? Scr.giftKicker() : 'Садочок і школа'}</div>
+        <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, lineHeight:1.05, margin:'4px 0 6px' }}>{c.title}</div>
+        <div style={{ fontWeight:700, fontSize:14 }}>Дивитися {c.ids.length} {Scr.plural(c.ids.length,'товар','товари','товарів')} →</div>
+      </div>
+      {p && <div style={{ width:118, flex:'none', borderRadius:'var(--radius-lg)', overflow:'hidden', background:'#fff' }}><Photo src={p.img} alt="" kind={p.imgKind} /></div>}
+    </Clickable>
+  ); };
+  const winter = S.colById('winter'), gifts = S.colById('gifts'), ranok = S.colById('ranok');
+  const wpics = ['m140718','m134070','m133790'].map(pic).filter(Boolean);
+  return (
+    <div className="d-hero">
+      <div style={{ position:'relative', overflow:'hidden', background:'var(--pink-500)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'40px 40px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+        <div style={{ position:'absolute', width:300, height:300, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.13)', right:-90, top:-110 }}></div>
+        <div style={{ position:'relative' }}>
+          <Badge tone="warning" size="lg">Зимовий сезон</Badge>
+          <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:50, lineHeight:.98, margin:'16px 0 12px', letterSpacing:'-0.02em' }}>Тепло для<br/>найменших</h1>
+          <p style={{ fontSize:17, fontWeight:600, maxWidth:400, margin:'0 0 20px' }}>{winter ? winter.sub : ''} Зарезервуйте онлайн — заберіть у магазині.</p>
+          <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+            <Button variant="sale" size="lg" onClick={()=>nav('catalog',{col:'winter'})}>Дивитися зимове</Button>
+            <Button variant="secondary" size="lg" onClick={()=>nav('catalog',{})} style={{background:'#fff'}}>Увесь каталог</Button>
+          </div>
+          {wpics.length > 0 && <div style={{ display:'flex', gap:10, marginTop:22 }}>
+            {wpics.map(p => <Clickable key={p.id} onClick={()=>nav('product',{id:p.id})} label={'Ілюстрація: ' + p.name} style={{ width:92, borderRadius:'var(--radius-md)', overflow:'hidden', background:'#fff' }}><Photo src={p.img} alt="" kind={p.imgKind} /></Clickable>)}
+          </div>}
+        </div>
+      </div>
+      <div style={{ display:'grid', gridTemplateRows:'1fr 1fr', gap:24 }}>
+        {gifts && side(gifts, 'green', 'm101396')}
+        {ranok && side(ranok, 'blue', 'm141734')}
+      </div>
+    </div>
+  );
+}
+
 function Hero({ nav, tabNav }) {
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'1.1fr 1fr', gap:24, marginBottom:36 }}>
+    <div className="d-hero">
       <div style={{ position:'relative', overflow:'hidden', background:'var(--pink-500)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'48px 44px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
         <div style={{ position:'absolute', width:300, height:300, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.13)', right:-90, top:-110 }}></div>
         <div style={{ position:'relative' }}>
@@ -98,7 +173,7 @@ function Section({ title, link, onLink, children }) {
 
 function Grid({ items, nav, addToCart }) {
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:18 }}>
+    <div className="d-grid">
       {items.map(p=> <ProductCard key={p.id} p={p} cat={S.catById(p.cat)} onOpen={()=>nav('product',{id:p.id})} onAdd={()=>addToCart(p)} />)}
     </div>
   );
@@ -107,9 +182,11 @@ function Grid({ items, nav, addToCart }) {
 function DesktopHome({ nav, tabNav, addToCart }) {
   return (
     <div style={{ maxWidth:1200, margin:'0 auto', padding:'32px 24px 0' }}>
-      <Hero nav={nav} tabNav={tabNav} />
+      {Scr.SourceNote && <Scr.SourceNote style={{ marginBottom:18 }} />}
+      {S.COLLECTIONS.length ? <ShowcaseHero nav={nav} /> : <Hero nav={nav} tabNav={tabNav} />}
+      {S.SOURCE.kind !== 'demo' && Scr.ReserveSteps && <Scr.ReserveSteps style={{ marginBottom:36 }} />}
       {/* categories */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:14, marginBottom:42 }}>
+      <div className="d-cats">
         {S.CATS.map(c=>(
           <Clickable key={c.id} onClick={()=>c.id==='sale'?tabNav('sale'):nav('catalog',{cat:c.id})} style={{ textAlign:'center', display:'block', width:'100%' }}>
             <div style={{ aspectRatio:'1/1', background:CSURF[c.color], color:c.color==='yellow'?'var(--ink-900)':'#fff', borderRadius:'var(--radius-lg)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10, position:'relative', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
@@ -121,16 +198,23 @@ function DesktopHome({ nav, tabNav, addToCart }) {
         ))}
       </div>
 
-      <Section title="Популярне" link="Усі товари" onLink={()=>nav('catalog',{})}><Grid items={S.popular()} nav={nav} addToCart={addToCart} /></Section>
+      {S.COLLECTIONS.map(c => (
+        <Section key={c.id} title={c.title} link={`Усі ${c.ids.length}`} onLink={()=>nav('catalog',{col:c.id})}>
+          <p style={{ fontSize:15, color:'var(--ink-500)', fontWeight:600, margin:'-8px 0 16px' }}>{c.sub}</p>
+          <Grid items={S.inCollection(c.id).slice(0,10)} nav={nav} addToCart={addToCart} />
+        </Section>
+      ))}
 
-      <div style={{ marginBottom:42 }}><PromoBanner color="pinkDeep" kicker="Тільки до неділі" title="Зимовий розпродаж — знижки до 50%" sub="Звільняємо місце для нового сезону" cta="Перейти до розпродажу" onClick={()=>nav('sale')} /></div>
+      {S.SOURCE.kind !== 'showcase' && <Section title={S.COLLECTIONS.length ? 'Популярне в магазинах' : 'Популярне'} link="Усі товари" onLink={()=>nav('catalog',{})}><Grid items={(S.COLLECTIONS.length ? S.PRODUCTS.filter(p=>!p.featured && p.hit).sort((a,b)=>a.rank-b.rank) : S.popular()).slice(0,10)} nav={nav} addToCart={addToCart} /></Section>}
 
-      <Section title="Знижки" link="Розпродаж" onLink={()=>nav('sale')}><Grid items={S.onSale().slice(0,5)} nav={nav} addToCart={addToCart} /></Section>
-      <Section title="Новинки" link="Усі новинки" onLink={()=>nav('catalog',{filter:'new'})}><Grid items={S.isNew().concat(S.PRODUCTS).slice(0,5)} nav={nav} addToCart={addToCart} /></Section>
+      {S.SOURCE.kind === 'demo' && <div style={{ marginBottom:42 }}><PromoBanner color="pinkDeep" kicker="Тільки до неділі" title="Зимовий розпродаж — знижки до 50%" sub="Звільняємо місце для нового сезону" cta="Перейти до розпродажу" onClick={()=>nav('sale')} /></div>}
+
+      {S.onSale().length > 0 && <Section title="Знижки" link="Розпродаж" onLink={()=>nav('sale')}><Grid items={S.onSale().slice(0,5)} nav={nav} addToCart={addToCart} /></Section>}
+      {S.isNew().length > 0 && <Section title="Новинки" link="Усі новинки" onLink={()=>nav('catalog',{filter:'new'})}><Grid items={S.isNew().slice(0,5)} nav={nav} addToCart={addToCart} /></Section>}
 
       {/* benefits */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:18, marginBottom:42 }}>
-        {[['store','3 магазини поруч','Кам’янське · Дніпро','stores'],['repeat','Легкий обмін','14 днів із чеком',null],['message-circle','Прямий зв’язок','Direct · Viber · Telegram',null],['package-check','Самовивіз безкоштовно','з будь-якого магазину','stores']].map((b,i)=>{
+      <div className="d-4" style={{ marginBottom:42 }}>
+        {[['store','3 магазини поруч','Кам’янське · Дніпро','stores'],['repeat','Легкий обмін','14 днів із чеком',null],['message-circle','Прямий зв’язок','Instagram · Viber · телефон',null],['package-check','Самовивіз безкоштовно','з будь-якого магазину','stores']].map((b,i)=>{
           const inner = (<React.Fragment>
             <div style={{ width:50, height:50, flex:'none', borderRadius:'var(--radius-md)', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={b[0]} style={{width:24,height:24,color:'var(--pink-600)'}} aria-hidden="true"></i></div>
             <div><div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)' }}>{b[1]}</div><div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600 }}>{b[2]}</div></div>
@@ -146,23 +230,21 @@ function DesktopHome({ nav, tabNav, addToCart }) {
       <div style={{ marginBottom:40 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18, flexWrap:'wrap' }}>
           <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:30, margin:0, color:'var(--ink-900)' }}>Що кажуть батьки</h2>
-          {S.REVIEWS_ARE_DEMO && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
+          {S.REVIEWS_ARE_DEMO && S.SOURCE.kind === 'demo' && <DemoTag note="Демонстраційні відгуки — замінити на справжні" />}
         </div>
-        {S.REVIEWS_ARE_DEMO && (
+        {S.REVIEWS_ARE_DEMO && S.SOURCE.kind === 'demo' && (
           <p style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, margin:'-8px 0 14px' }}>
             Це приклади для прототипу, а не справжні відгуки покупців.
           </p>
         )}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:18 }}>
-          {S.shopReviews().concat(S.REVIEWS.filter(r=>r.product).slice(0,2)).slice(0,4).map(r=> <ReviewCard key={r.id} r={r} />)}
-        </div>
+        {S.SOURCE.kind === 'demo'
+          ? <div className="d-4">{S.shopReviews().concat(S.REVIEWS.filter(r=>r.product).slice(0,2)).slice(0,4).map(r=> <ReviewCard key={r.id} r={r} />)}</div>
+          : <div style={{ maxWidth:560 }}><U.ReviewsEmpty onWrite={()=>window.open(IG,'_blank')} /></div>}
       </div>
 
       {/* instagram */}
-      <Section title="Ми в Instagram" link="@alisa.kids.shop" onLink={()=>window.open(IG,'_blank')}>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:14 }}>
-          {S.PRODUCTS.slice(0,6).map(p=> <Clickable key={p.id} onClick={()=>nav('product',{id:p.id})} label={p.name}><Photo cat={S.catById(p.cat)} src={p.img} alt="" /></Clickable>)}
-        </div>
+      <Section title="Ми в Instagram">
+        <div style={{ maxWidth:560 }}><Scr.InstagramCard /></div>
       </Section>
     </div>
   );
@@ -171,16 +253,16 @@ function DesktopHome({ nav, tabNav, addToCart }) {
 /* ---------------- FOOTER ---------------- */
 function Footer({ nav, tabNav, openDM }) {
   const link = (label, onClick)=> <Clickable key={label} onClick={onClick} style={{ fontSize:14, color:'var(--ink-600)', fontWeight:600 }}>{label}</Clickable>;
-  const social = [['instagram',()=>window.open(IG,'_blank')],['facebook',()=>window.open('https://www.facebook.com/alisa.kids.ua/','_blank')],['send',openDM],['phone',openDM]];
+  const social = [['instagram',()=>window.open(IG,'_blank'),'Instagram'],['message-circle',openDM,'Написати нам'],['phone',()=>{ location.href='tel:+380988222964'; },'Зателефонувати']];
   return (
     <footer style={{ background:'#fff', borderTop:'1px solid var(--ink-100)', marginTop:20 }}>
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'44px 24px 28px' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr 1fr 1.2fr', gap:32 }}>
+        <div className="d-foot">
           <div>
             <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:36 }} />
             <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, lineHeight:1.6, margin:'14px 0 16px', maxWidth:260 }}>Сімейний магазин дитячого одягу, взуття та іграшок. 3 магазини у Кам’янському та Дніпрі.</p>
             <div style={{ display:'flex', gap:10 }}>
-              {social.map(s=> <Clickable key={s[0]} onClick={s[1]} label={s[0]} style={{ width:40, height:40, borderRadius:'50%', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={s[0]} style={{width:19,height:19,color:'var(--pink-600)'}} aria-hidden="true"></i></Clickable>)}
+              {social.map(s=> <Clickable key={s[0]} onClick={s[1]} label={s[2]} style={{ width:40, height:40, borderRadius:'50%', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide={s[0]} style={{width:19,height:19,color:'var(--pink-600)'}} aria-hidden="true"></i></Clickable>)}
             </div>
           </div>
           <div>
@@ -206,7 +288,7 @@ function Footer({ nav, tabNav, openDM }) {
             {S.STORES.map(s=>(
               <Clickable key={s.id} onClick={()=>tabNav('stores')} style={{ display:'block', width:'100%', marginBottom:10, fontSize:13.5 }}>
                 <b style={{color:'var(--ink-900)'}}>{s.id} · {s.city}</b>
-                <div style={{ color:'var(--ink-500)', fontWeight:600 }}>{s.addr} · {s.hours}</div>
+                <div style={{ color:'var(--ink-500)', fontWeight:600 }}>{s.addr}{s.hours ? ' · ' + s.hours : ''}</div>
               </Clickable>
             ))}
           </div>
@@ -221,14 +303,15 @@ function Footer({ nav, tabNav, openDM }) {
 }
 
 /* ---------------- OVERLAYS (ported from mobile app) ---------------- */
-function Sheet({ children, onClose, side, wide }) {
-  const base = { background:'#fff', overflowY:'auto', padding:'22px 24px', animation:'dlgIn .22s ease' };
+function Sheet({ children, onClose, side, wide, label }) {
+  const ref = useDialog(onClose);
+  const base = { background:'#fff', overflowY:'auto', padding:'22px 24px', animation:'dlgIn .22s ease', maxWidth:'100%', boxSizing:'border-box' };
   const pos = side==='right'
     ? { marginLeft:'auto', width:wide||420, height:'100%' }
     : { margin:'auto', width:wide||460, maxHeight:'86%', borderRadius:24 };
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:60, background:'rgba(46,26,38,.42)', display:'flex' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ ...base, ...pos }}>{children}</div>
+      <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={e=>e.stopPropagation()} style={{ ...base, ...pos }}>{children}</div>
     </div>
   );
 }
@@ -245,11 +328,12 @@ function FiltersDrawer({ onClose, nav, initial }) {
     </div>
   );
   return (
-    <Sheet onClose={onClose} side="right">
+    <Sheet onClose={onClose} side="right" label="Фільтри">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <span style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20 }}>Фільтри</span>
         <IconButton aria-label="Закрити" variant="ghost" onClick={onClose}>{I('x')}</IconButton>
       </div>
+      {S.COLLECTIONS.length > 0 && grp('Добірка', S.COLLECTIONS.map(c=> <FilterChip key={c.id} label={c.short} color="pink" active={sel.col===c.id} onClick={()=>t('col',c.id)} />))}
       {grp('Категорія', S.CATS.filter(c=>c.id!=='sale').map(c=> <FilterChip key={c.id} label={c.uk} color={c.color} active={sel.cat===c.id} onClick={()=>t('cat',c.id)} />))}
       {grp('Вік', Object.keys(S.AGE_BUCKETS).map(a=> <FilterChip key={a} label={a+' р'} active={sel.age===a} onClick={()=>t('age',a)} />))}
       {grp('Розмір (зріст)', S.SIZES_CLOTHING.map(s=> <FilterChip key={s} label={s} active={sel.size===s} onClick={()=>t('size',s)} />))}
@@ -269,15 +353,17 @@ function FiltersDrawer({ onClose, nav, initial }) {
 
 function SearchOverlay({ onClose, nav, addToCart }) {
   const [q, setQ] = React.useState('');
-  const res = q.trim() ? S.PRODUCTS.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.id.includes(q)) : [];
-  const popular = ['Комбінезон','Кросівки','Іграшки','Шапка','Рюкзак'];
+  const ql = q.trim().toLowerCase();
+  const res = ql ? S.search(q) : [];  /* every word must match; top 40 by popularity */
+  const popular = ['Комбінезон','Чоботи','Шапка','Піжама','Настільна гра','Конструктор'];
   React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const ref = useDialog(onClose);
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:60, background:'#fff', display:'flex', flexDirection:'column' }}>
+    <div ref={ref} role="dialog" aria-modal="true" aria-label="Пошук" style={{ position:'fixed', inset:0, zIndex:60, background:'#fff', display:'flex', flexDirection:'column' }}>
       <div style={{ maxWidth:900, width:'100%', margin:'0 auto', display:'flex', gap:10, alignItems:'center', padding:'16px 24px', borderBottom:'1px solid var(--ink-100)' }}>
         <div style={{ flex:1, position:'relative' }}>
           <i data-lucide="search" style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:19, height:19, color:'var(--ink-400)' }}></i>
-          <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:16, outline:'none' }} />
+          <input autoFocus type="search" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:16, outline:'none' }} />
         </div>
         <button onClick={onClose} style={{ background:'none', border:0, fontWeight:700, fontSize:15, color:'var(--pink-600)', cursor:'pointer' }}>Скасувати</button>
       </div>
@@ -290,7 +376,7 @@ function SearchOverlay({ onClose, nav, addToCart }) {
         )}
         {q.trim() && res.length===0 && <Scr.EmptyState nav={(r,p)=>{onClose();nav(r,p);}} />}
         {res.length>0 && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
+          <div className="d-grid">
             {res.map(p=> <ProductCard key={p.id} p={p} cat={S.catById(p.cat)} onOpen={()=>{onClose();nav('product',{id:p.id});}} onAdd={()=>addToCart(p)} />)}
           </div>
         )}
@@ -300,11 +386,11 @@ function SearchOverlay({ onClose, nav, addToCart }) {
 }
 
 function DMSheet({ onClose }) {
-  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00',IG],['Viber','phone','var(--info)','Швидка відповідь','viber://chat?number=%2B380988222964'],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)',S.PHONE,'tel:+380988222964']];
+  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня',IG],['Viber','phone','var(--info)','Швидка відповідь, можна надіслати фото','viber://chat?number=%2B380988222964'],['Зателефонувати','phone-call','var(--green-600)',S.PHONE,'tel:+380988222964']];
   const pick = (o)=>{ if(o[4]) window.open(o[4],'_blank'); onClose(); };
   React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   return (
-    <Sheet onClose={onClose}>
+    <Sheet onClose={onClose} label="Напишіть нам">
       <div style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20, marginBottom:4 }}>Напишіть нам</div>
       <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 0 16px' }}>Підкажемо наявність, розмір і допоможемо із замовленням.</p>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -324,7 +410,8 @@ function DMSheet({ onClose }) {
 function DesktopApp() {
   const [stack, setStack] = React.useState([{ r:'home', p:{} }]);
   const cur = stack[stack.length-1];
-  const [cart, setCart] = React.useState([]);
+  const [cart, setCart] = React.useState(loadCart);
+  React.useEffect(()=>{ saveCart(cart); }, [cart]);
   const [overlay, setOverlay] = React.useState(null);
   const [toast, setToast] = React.useState(null);
 
@@ -335,11 +422,13 @@ function DesktopApp() {
   const tabNav = (r, p={}) => setStack([{ r, p }]);
 
   const cartCount = cart.reduce((s,i)=>s+i.qty,0);
-  const addToCart = (p, size=null, qty=1) => {
+  const addToCart = (p0, size0=null, qty=1) => {
+    const { p, size } = S.cartLine(p0, size0);  /* real goods: Torgsoft code + price of that size */
     setCart(c => {
       const k = c.findIndex(i=>i.p.id===p.id && i.size===size);
-      if(k>=0){ const n=[...c]; n[k]={...n[k],qty:n[k].qty+qty}; return n; }
-      return [...c, { p, size, qty }];
+      const max = S.maxQty(p);
+      if(k>=0){ const n=[...c]; n[k]={...n[k],qty:Math.min(max, n[k].qty+qty)}; return n; }
+      return [...c, { p, size, qty: Math.min(max, qty) }];
     });
     setToast(`Додано: ${p.name}`); setTimeout(()=>setToast(null), 1800);
   };
@@ -350,7 +439,7 @@ function DesktopApp() {
 
   let inner;
   if(cur.r==='catalog') inner = <Scr.CatalogScreen nav={nav} addToCart={addToCart} params={cur.p} openFilters={()=>setOverlay('filters')} />;
-  else if(cur.r==='product') inner = <Scr.ProductScreen nav={nav} addToCart={addToCart} params={cur.p} openDM={openDM} />;
+  else if(cur.r==='product') inner = <Scr.ProductScreen key={cur.p.id} nav={nav} addToCart={addToCart} params={cur.p} openDM={openDM} />;
   else if(cur.r==='cart') inner = <Scr.CartScreen nav={nav} cart={cart} setQty={setQty} removeItem={removeItem} />;
   else if(cur.r==='checkout') inner = <Scr.CheckoutScreen nav={nav} cart={cart} placeOrder={placeOrder} />;
   else if(cur.r==='confirm') inner = <Scr.ConfirmScreen nav={tabNav} params={cur.p} />;
@@ -371,7 +460,8 @@ function DesktopApp() {
       </main>
       <Footer nav={nav} tabNav={tabNav} openDM={openDM} />
 
-      {toast && <div style={{ position:'fixed', left:'50%', transform:'translateX(-50%)', bottom:28, zIndex:70, background:'var(--ink-900)', color:'#fff', borderRadius:'var(--radius-pill)', padding:'12px 20px', fontWeight:700, fontSize:14, display:'flex', alignItems:'center', gap:9, boxShadow:'var(--shadow-lg)' }}><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
+      <div aria-live="polite" style={U.SR}>{toast || ''}</div>
+      {toast && <div aria-hidden="true" style={{ position:'fixed', left:'50%', transform:'translateX(-50%)', bottom:28, zIndex:70, background:'var(--ink-900)', color:'#fff', borderRadius:'var(--radius-pill)', padding:'12px 20px', fontWeight:700, fontSize:14, display:'flex', alignItems:'center', gap:9, boxShadow:'var(--shadow-lg)' }}><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
 
       {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} initial={cur.r==='catalog'?cur.p:null} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
       {overlay==='search' && <SearchOverlay onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} addToCart={addToCart} />}

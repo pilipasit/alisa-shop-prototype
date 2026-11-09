@@ -25,15 +25,15 @@ function CartScreen({ nav, cart, setQty, removeItem }) {
       <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
         {cart.map((it,idx)=>(
           <div key={idx} style={{ display:'flex', gap:12, background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)', padding:12, boxShadow:'var(--ring-soft)' }}>
-            <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} src={it.p.img} alt={it.p.name} /></div>
+            <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} src={it.p.img} alt={it.p.name} kind={it.p.imgKind} /></div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:800, fontSize:14.5, color:'var(--ink-900)', lineHeight:1.2 }}>{it.p.name}</div>
-              <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:700, margin:'2px 0 8px' }}>Арт. {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
+              <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:700, margin:'2px 0 8px' }}>{it.p.real ? 'Код' : 'Арт.'} {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                 <Pr2 p={it.p} size={20} />
                 <Ib2 aria-label="Прибрати" variant="ghost" size="sm" onClick={()=>removeItem(idx)}>{Ic('trash-2')}</Ib2>
               </div>
-              <div style={{ marginTop:8 }}><Qty2 value={it.qty} onChange={(v)=>setQty(idx,v)} /></div>
+              <div style={{ marginTop:8 }}><Qty2 value={it.qty} onChange={(v)=>setQty(idx,v)} max={S2.maxQty(it.p)} /></div>
             </div>
           </div>
         ))}
@@ -46,10 +46,10 @@ function CartScreen({ nav, cart, setQty, removeItem }) {
         <Row k="До сплати" v={`${total} ₴`} big />
       </div>
 
-      <No2 tone="info" title="Наявність підтверджує магазин">Менеджер зв’яжеться з вами після замовлення, щоб підтвердити наявність та розмір.</No2>
+      <No2 tone="info" title="Це резерв, а не оплата">Оберете магазин — ми перевіримо наявність, зателефонуємо або напишемо у Viber і відкладемо товар на 48 годин. Оплата в магазині, після примірки.</No2>
 
       <div style={{ display:'flex', flexDirection:'column', gap:10, marginTop:16 }}>
-        <B2 variant="primary" size="lg" fullWidth onClick={()=>nav('checkout')}>Оформити замовлення</B2>
+        <B2 variant="primary" size="lg" fullWidth onClick={()=>nav('checkout')}>Зарезервувати</B2>
         <B2 variant="ghost" fullWidth onClick={()=>nav('catalog',{})}>Продовжити покупки</B2>
       </div>
       <div style={{ height:20 }}></div>
@@ -92,17 +92,30 @@ const VALIDATORS = {
   },
 };
 
+/* how many cart lines a shop can serve from its own shelf (real goods: stock of that size; demo: the label) */
+function storeCover(cart, storeId) {
+  let ok = 0;
+  cart.forEach(it => {
+    const model = it.p.modelId ? S2.byId(it.p.modelId) : null;
+    const v = model && model.variants ? model.variants.find(x => x.id === it.p.id) : null;
+    const n = v ? (v.stock[storeId] || 0) : (it.p.av && it.p.av[storeId] !== 'out' ? it.qty : 0);
+    if (n >= it.qty) ok++;
+  });
+  return ok;
+}
+
 function CheckoutScreen({ nav, cart, placeOrder }) {
+  const cover = Object.fromEntries(S2.STORES.map(s => [s.id, storeCover(cart, s.id)]));
+  const best = S2.STORES.slice().sort((a,b) => cover[b.id] - cover[a.id])[0];
   const [step, setStep] = React.useState(0);
-  const [delivery, setDelivery] = React.useState('np');
-  const [store, setStore] = React.useState('A-2');
-  const [pay, setPay] = React.useState('cod');
-  const [form, setForm] = React.useState({ name:'', phone:'', city:'', comment:'' });
+  const delivery = 'pickup', pay = 'cod';    /* launch model: reserve online, pay in the shop */
+  const [store, setStore] = React.useState(best ? best.id : 'A-1');
+  const [form, setForm] = React.useState({ name:'', phone:'', city:'', comment:'', website_url:'' });
   const [errors, setErrors] = React.useState({});
   const [sending, setSending] = React.useState(false);
   const [sendError, setSendError] = React.useState(null);   // 'server' | 'network' | null
   const total = cart.reduce((s,i)=>s+i.p.price*i.qty,0);
-  const steps = ['Контакти','Доставка','Підтвердження'];
+  const steps = ['Магазин','Контакти','Підтвердження'];
 
   /* revalidate a field only once it already showed an error → no nagging mid-typing */
   const setField = (k, v) => {
@@ -124,22 +137,23 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
     return true;
   };
   const submitOrder = async () => {
-    if (!checkContacts()) { setStep(0); return; }   // guard: never submit an invalid request
+    if (!checkContacts()) { setStep(1); return; }   // guard: never submit an invalid request
     setSendError(null);
 
     const payload = {
       name: form.name.trim(),
       phone: '+38' + normalizePhone(form.phone),
-      city: form.city.trim(),
+      city: (S2.STORES.find(s => s.id === store) || {}).city || '',
       comment: form.comment.trim(),
+      website_url: form.website_url,   /* honeypot: people never see it, bots fill it in; the Worker drops those */
       delivery,
-      store: delivery === 'pickup' ? store : null,
+      store,
       pay,
       items: cart.map(i => ({ id: i.p.id, name: i.p.name, size: i.size, qty: i.qty, price: i.p.price })),
     };
 
     /* No endpoint configured → demo mode: show the flow but admit nothing was sent. */
-    if (!S2.ORDER_ENDPOINT) { placeOrder({ ref: null, demo: true }); return; }
+    if (!S2.ORDER_ENDPOINT) { placeOrder({ ref: null, demo: true, store }); return; }
 
     setSending(true);
     try {
@@ -150,10 +164,10 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
-        placeOrder({ ref: data.ref, demo: false });
+        placeOrder({ ref: data.ref, demo: false, store });
       } else if (res.status === 422) {
         /* Server rejected a field the browser thought was fine — send them back to fix it. */
-        setSending(false); setStep(0);
+        setSending(false); setStep(1);
         setErrors(e => ({ ...e, ...(data.fields || []).reduce((a, f) => (a[f] = 'Перевірте це поле.', a), {}) }));
       } else {
         setSending(false); setSendError('server');
@@ -165,9 +179,9 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
   };
   return (
     <div>
-      <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, margin:'0 0 16px', color:'var(--ink-900)' }}>Оформлення</h1>
+      <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, margin:'0 0 16px', color:'var(--ink-900)' }}>Резерв у магазині</h1>
       {/* stepper */}
-      <div style={{ display:'flex', alignItems:'center', marginBottom:20 }}>
+      <div aria-label={`Крок ${step+1} з ${steps.length}: ${steps[step]}`} role="group" style={{ display:'flex', alignItems:'center', marginBottom:20 }}>
         {steps.map((s,i)=>(
           <React.Fragment key={i}>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
@@ -180,6 +194,34 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
       </div>
 
       {step===0 && (
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <div id="co-store-h" style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>Де забрати?</div>
+          <div role="radiogroup" aria-labelledby="co-store-h" style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            {S2.STORES.map(s => {
+              const on = store === s.id, all = cover[s.id] === cart.length, none = cover[s.id] === 0;
+              return (
+                <button key={s.id} type="button" role="radio" aria-checked={on} onClick={()=>setStore(s.id)}
+                  style={{ display:'flex', gap:12, alignItems:'flex-start', textAlign:'left', padding:'13px 14px', borderRadius:'var(--radius-md)', cursor:'pointer',
+                    border:'2px solid '+(on?'var(--pink-500)':'var(--ink-200)'), background:on?'var(--pink-100)':'#fff', fontFamily:'var(--font-body)' }}>
+                  <span aria-hidden="true" style={{ width:22, height:22, marginTop:1, borderRadius:'50%', flex:'none', border:'2px solid '+(on?'var(--pink-500)':'var(--ink-300)'), display:'flex', alignItems:'center', justifyContent:'center' }}>{on && <span style={{width:11,height:11,borderRadius:'50%',background:'var(--pink-500)'}}></span>}</span>
+                  <span style={{ flex:1, minWidth:0 }}>
+                    <span style={{ display:'block', fontWeight:800, fontSize:14.5, color:'var(--ink-900)' }}>{s.id} · {s.city}</span>
+                    <span style={{ display:'block', fontSize:12.5, color:'var(--ink-500)', fontWeight:600 }}>{s.addr}{s.hours ? ' · ' + s.hours : ''}</span>
+                    <span style={{ display:'block', marginTop:4, fontSize:12.5, fontWeight:800, color: all?'var(--green-600)':none?'var(--ink-500)':'var(--ink-700)' }}>
+                      {all ? (cart.length > 1 ? 'Є всі товари з кошика' : 'Товар є в цьому магазині')
+                        : none ? 'Зараз немає — можемо привезти з іншого магазину'
+                        : `Є ${cover[s.id]} з ${cart.length} — решту можемо привезти з іншого магазину`}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600, lineHeight:1.45 }}>{S2.SOURCE.dateOnly ? `Наявність — на ранок ${S2.SOURCE.dateOnly}; точно підтвердить продавець.` : 'Наявність підтвердить продавець.'} Доставка Новою поштою з’явиться пізніше.</div>
+          <B2 variant="primary" size="lg" fullWidth onClick={()=>setStep(1)}>Далі</B2>
+        </div>
+      )}
+
+      {step===1 && (
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
           {(errors.name || errors.phone) && (
             <div role="alert" style={{ background:'var(--red-100)', color:'var(--red-500)', fontWeight:700, fontSize:13.5,
@@ -194,40 +236,15 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             icon={Ic('phone')} autoComplete="tel" inputMode="tel" value={form.phone}
             error={errors.phone} hint={PHONE_HINT} aria-invalid={!!errors.phone}
             onChange={e=>setField('phone', e.target.value)} onBlur={()=>blurField('phone')} />
-          <In2 id="co-city" name="city" label="Місто" placeholder="Кам’янське / Дніпро…" icon={Ic('map-pin')}
-            autoComplete="address-level2" hint="Необов’язково — уточнимо під час дзвінка."
-            value={form.city} onChange={e=>setField('city', e.target.value)} />
-          <B2 variant="primary" size="lg" fullWidth onClick={()=>{ if(checkContacts()) setStep(1); }}>Далі</B2>
-        </div>
-      )}
-
-      {step===1 && (
-        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-          <div>
-            <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)', marginBottom:8 }}>Спосіб доставки</div>
-            {[['np','Нова пошта','відділення / поштомат · 1–3 дні'],['pickup','Самовивіз із магазину','безкоштовно · А-1 · А-2 · А-3'],['courier','Кур’єр по місту','Кам’янське · Дніпро']].map(o=>(
-              <RadioRow key={o[0]} active={delivery===o[0]} onClick={()=>setDelivery(o[0])} title={o[1]} sub={o[2]} />
-            ))}
+          <In2 name="comment" label="Коментар" placeholder="Напр.: краще писати у Viber, або дзвоніть після 18:00"
+            hint="Необов’язково." value={form.comment} onChange={e=>setField('comment', e.target.value)} />
+          {/* honeypot — hidden from people and screen readers */}
+          <div aria-hidden="true" style={{ position:'absolute', left:-9999, width:1, height:1, overflow:'hidden' }}>
+            <label>Не заповнюйте це поле <input tabIndex={-1} autoComplete="off" name="website_url" value={form.website_url} onChange={e=>setField('website_url', e.target.value)} /></label>
           </div>
-          {delivery==='pickup' && (
-            <div>
-              <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)', marginBottom:8 }}>Який магазин?</div>
-              <div style={{ display:'flex', gap:8 }}>
-                {S2.STORES.map(s=> <button key={s.id} onClick={()=>setStore(s.id)} style={{ flex:1, padding:'10px 0', borderRadius:'var(--radius-md)', fontWeight:800, fontSize:14, cursor:'pointer', border:'2px solid '+(store===s.id?'var(--pink-500)':'var(--ink-200)'), background:store===s.id?'var(--pink-100)':'#fff', color:store===s.id?'var(--pink-600)':'var(--ink-700)' }}>{s.id}</button>)}
-              </div>
-            </div>
-          )}
-          <div>
-            <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)', marginBottom:8 }}>Оплата</div>
-            {[['cod','При отриманні','готівка або картка'],['card','Картка онлайн','скоро · поки недоступно']].map(o=>(
-              <RadioRow key={o[0]} active={pay===o[0]} onClick={()=>o[0]==='cod'&&setPay(o[0])} title={o[1]} sub={o[2]} disabled={o[0]==='card'} />
-            ))}
-          </div>
-          <In2 name="comment" label="Коментар до замовлення" placeholder="Напр.: зателефонуйте після 18:00"
-            value={form.comment} onChange={e=>setField('comment', e.target.value)} />
           <div style={{ display:'flex', gap:10 }}>
             <B2 variant="ghost" onClick={()=>setStep(0)}>Назад</B2>
-            <B2 variant="primary" size="lg" fullWidth onClick={()=>setStep(2)}>Далі</B2>
+            <B2 variant="primary" size="lg" fullWidth onClick={()=>{ if(checkContacts()) setStep(2); }}>Далі</B2>
           </div>
         </div>
       )}
@@ -244,15 +261,16 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             ))}
             <div style={{ height:1, background:'var(--ink-100)', margin:'10px 0' }}></div>
             <Row k="До сплати" v={`${total} ₴`} big />
-            <div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, marginTop:8 }}>
-              {delivery==='pickup'?`Самовивіз · магазин ${store}`:delivery==='np'?'Нова пошта':'Кур’єр по місту'} · {pay==='cod'?'Оплата при отриманні':'Картка онлайн'}
+            <div style={{ fontSize:13, color:'var(--ink-500)', fontWeight:600, marginTop:8, lineHeight:1.45 }}>
+              Самовивіз · <b style={{color:'var(--ink-900)'}}>{(S2.STORES.find(s=>s.id===store)||{}).name}</b>, {(S2.STORES.find(s=>s.id===store)||{}).addr} · оплата в магазині
+              {' '}<Clk onClick={()=>setStep(0)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, textDecoration:'underline' }}>Змінити</Clk>
             </div>
             <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:10, paddingTop:10, fontSize:13.5, color:'var(--ink-700)', fontWeight:600 }}>
-              <div><b style={{color:'var(--ink-900)'}}>{form.name}</b> · {form.phone}{form.city?` · ${form.city}`:''}</div>
-              <Clk onClick={()=>setStep(0)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, textDecoration:'underline' }}>Змінити контакти</Clk>
+              <div><b style={{color:'var(--ink-900)'}}>{form.name}</b> · {form.phone}</div>
+              <Clk onClick={()=>setStep(1)} style={{ color:'var(--pink-600)', fontWeight:700, fontSize:13, textDecoration:'underline' }}>Змінити контакти</Clk>
             </div>
           </div>
-          <No2 tone="info" title="Підтвердження від магазину">Це попереднє замовлення. Менеджер зв’яжеться з вами найближчим часом, щоб підтвердити наявність і деталі.</No2>
+          <No2 tone="info" title="Що далі">Продавець перевірить товар на полиці й зв’яжеться з вами протягом години в робочий час. Після підтвердження відкладемо на 48 годин. Платити заздалегідь не потрібно.</No2>
 
           {/* Delivery failed — tell the truth and give a way through, never a fake success. */}
           {sendError && (
@@ -280,10 +298,14 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             </div>
           )}
 
-          <div style={{ display:'flex', gap:10, marginTop:14 }}>
+          <p style={{ fontSize:12, color:'var(--ink-500)', fontWeight:600, margin:'12px 0 0', lineHeight:1.45 }}>
+            Натискаючи «Зарезервувати», ви погоджуєтеся, що ми використаємо ім’я й телефон лише для цього резерву
+            (<Clk onClick={()=>nav('info',{doc:'privacy'})} style={{ color:'var(--pink-600)', fontWeight:700, textDecoration:'underline', fontSize:12 }}>політика конфіденційності</Clk>).
+          </p>
+          <div style={{ display:'flex', gap:10, marginTop:12 }}>
             <B2 variant="ghost" onClick={()=>setStep(1)} disabled={sending}>Назад</B2>
             <B2 variant="primary" size="lg" fullWidth onClick={submitOrder} disabled={sending}>
-              {sending ? 'Надсилаємо…' : 'Підтвердити замовлення'}
+              {sending ? 'Надсилаємо…' : 'Зарезервувати'}
             </B2>
           </div>
         </div>
@@ -294,7 +316,9 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
 }
 function RadioRow({ active, onClick, title, sub, disabled }) {
   return (
-    <div onClick={disabled?null:onClick} style={{ opacity:disabled?.55:1, display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:'var(--radius-md)', border:'2px solid '+(active?'var(--pink-500)':'var(--ink-200)'), background:active?'var(--pink-100)':'#fff', cursor:disabled?'not-allowed':'pointer', marginBottom:8 }}>
+    <div role="radio" aria-checked={!!active} aria-disabled={!!disabled} tabIndex={disabled?-1:0}
+      onKeyDown={e=>{ if(!disabled && (e.key===' '||e.key==='Enter')){ e.preventDefault(); onClick(); } }}
+      onClick={disabled?null:onClick} style={{ opacity:disabled?.55:1, display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:'var(--radius-md)', border:'2px solid '+(active?'var(--pink-500)':'var(--ink-200)'), background:active?'var(--pink-100)':'#fff', cursor:disabled?'not-allowed':'pointer', marginBottom:8 }}>
       <span style={{ width:22, height:22, borderRadius:'50%', flex:'none', border:'2px solid '+(active?'var(--pink-500)':'var(--ink-300)'), display:'flex', alignItems:'center', justifyContent:'center' }}>{active && <span style={{width:11,height:11,borderRadius:'50%',background:'var(--pink-500)'}}></span>}</span>
       <div><div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{title}</div><div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600 }}>{sub}</div></div>
     </div>
@@ -305,19 +329,22 @@ function RadioRow({ active, onClick, title, sub, disabled }) {
 function ConfirmScreen({ nav, params }) {
   const ref = params && params.ref;
   const demo = params && params.demo;
+  const st = params && S2.STORES.find(s => s.id === params.store);
   return (
     <div style={{ textAlign:'center', padding:'30px 16px' }}>
       <div style={{ width:104, height:104, margin:'0 auto 20px', borderRadius:'var(--radius-blob)', background:'var(--green-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide="check" style={{width:54,height:54,color:'var(--green-600)',strokeWidth:3}}></i></div>
-      <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:28, color:'var(--ink-900)', margin:0 }}>Замовлення прийнято!</h1>
+      <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:28, color:'var(--ink-900)', margin:0 }}>Резерв отримали!</h1>
       <p style={{ fontSize:15, color:'var(--ink-600)', fontWeight:600, margin:'10px auto 4px', maxWidth:300, lineHeight:1.5 }}>
-        Дякуємо!{ref ? <> Номер замовлення <b style={{color:'var(--ink-900)'}}>{ref}</b>.</> : ''}
+        Дякуємо!{ref ? <> Номер резерву <b style={{color:'var(--ink-900)'}}>{ref}</b>.</> : ''}
       </p>
       {demo && (
         <p style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:700, margin:'0 auto 8px', maxWidth:320 }}>
-          (демо-режим — замовлення нікуди не надіслано)
+          (демо-режим — резерв нікуди не надіслано)
         </p>
       )}
-      <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 auto 22px', maxWidth:300, lineHeight:1.5 }}>Менеджер зателефонує найближчим часом, щоб підтвердити наявність і деталі доставки.</p>
+      <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 auto 22px', maxWidth:320, lineHeight:1.5 }}>
+        Продавець{st ? <> магазину <b style={{color:'var(--ink-900)'}}>{st.id}</b> ({st.addr})</> : ''} зв’яжеться з вами протягом години в робочий час.
+        Після підтвердження відкладемо товар на 48 годин — оплата в магазині.</p>
       <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:320, margin:'0 auto' }}>
         <B2 variant="secondary" fullWidth icon={Ic('message-circle')} onClick={()=>window.open('https://www.instagram.com/alisa.kids.shop/','_blank')}>Написати нам у Direct</B2>
         <B2 variant="primary" fullWidth onClick={()=>nav('home')}>На головну</B2>
@@ -351,6 +378,17 @@ function StoresScreen({ nav }) {
 
 /* ---------------- SALE ---------------- */
 function SaleScreen({ nav, addToCart }) {
+  if (S2.SOURCE.kind !== 'demo' && S2.onSale().length === 0) return (
+    <div style={{ textAlign:'center', padding:'30px 16px' }}>
+      <div style={{ width:96, height:96, margin:'0 auto 18px', borderRadius:'var(--radius-blob)', background:'var(--pink-100)', display:'flex', alignItems:'center', justifyContent:'center' }}><i data-lucide="badge-percent" style={{width:44,height:44,color:'var(--pink-500)'}} aria-hidden="true"></i></div>
+      <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, color:'var(--ink-900)', margin:0 }}>Знижок зараз немає</h1>
+      <p style={{ fontSize:14.5, color:'var(--ink-500)', fontWeight:600, margin:'8px auto 18px', maxWidth:300, lineHeight:1.5 }}>Розпродаж почнеться після свят. А поки — подивіться, що є до зими й під ялинку.</p>
+      <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:300, margin:'0 auto' }}>
+        {S2.COLLECTIONS.map(c => <B2 key={c.id} variant="secondary" fullWidth onClick={()=>nav('catalog',{col:c.id})}>{c.title}</B2>)}
+        <B2 variant="primary" fullWidth onClick={()=>nav('catalog',{})}>Увесь каталог</B2>
+      </div>
+    </div>
+  );
   return (
     <div>
       <div style={{ background:'var(--pink-600)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'24px 22px', position:'relative', overflow:'hidden', marginBottom:18 }}>
@@ -392,7 +430,7 @@ function LinkBioScreen({ nav }) {
     ['Іграшки','blocks','green',()=>nav('catalog',{cat:'toys'})],
   ];
   const IG = 'https://www.instagram.com/alisa.kids.shop/';
-  const contacts = [['Instagram Direct','instagram',IG],['Viber','phone',null],['Telegram','send',null],['Каталог на сайті','globe',null]];
+  const contacts = [['Instagram Direct','instagram',IG],['Viber','phone','viber://chat?number=%2B380988222964'],['Зателефонувати','phone-call','tel:+380988222964'],['Каталог на сайті','globe',null]];
   return (
     <div style={{ textAlign:'center' }}>
       <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:54, margin:'8px 0 6px' }} />
@@ -411,7 +449,7 @@ function LinkBioScreen({ nav }) {
 
       <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:18 }}>
         {contacts.map(c=>(
-          <button key={c[0]} onClick={()=>{ if(c[2]) window.open(c[2],'_blank'); else if(c[0].includes('Каталог')) nav('home'); }} style={{ display:'flex', alignItems:'center', gap:12, width:'100%', background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', padding:'13px 18px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:'var(--ink-800)', cursor:'pointer' }}>
+          <button key={c[0]} type="button" onClick={()=>{ if(c[2]) window.open(c[2],'_blank'); else nav('catalog',{}); }} style={{ display:'flex', alignItems:'center', gap:12, width:'100%', background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', padding:'13px 18px', fontFamily:'var(--font-display)', fontWeight:600, fontSize:15, color:'var(--ink-800)', cursor:'pointer' }}>
             <i data-lucide={c[1]} style={{ width:20, height:20, color:'var(--pink-500)' }}></i>{c[0]}
             <i data-lucide="chevron-right" style={{ width:18, height:18, marginLeft:'auto', color:'var(--ink-300)' }}></i>
           </button>
@@ -436,18 +474,27 @@ function SizeGuide() {
   return (
     <div>
       <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, margin:'0 0 12px' }}>Таблиця розмірів</h1>
-      <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, marginBottom:16 }}>Розмір одягу = зріст дитини у сантиметрах. Якщо вагаєтесь — оберіть більший.</p>
-      <div style={{ background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-md)', overflow:'hidden' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', background:'var(--pink-500)', color:'#fff', fontWeight:800, fontSize:13 }}>
-          {['Розмір','Вік','Вага'].map(h=> <span key={h} style={{ padding:'11px 14px' }}>{h}</span>)}
-        </div>
-        {rows.map((r,i)=>(
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', background:i%2?'var(--cream)':'#fff', fontSize:14 }}>
-            {r.map((c,j)=> <span key={j} style={{ padding:'11px 14px', fontWeight:j===0?800:600, color:j===0?'var(--ink-900)':'var(--ink-600)' }}>{c}</span>)}
-          </div>
-        ))}
-      </div>
+      <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20, margin:'0 0 6px' }}>Одяг</h2>
+      <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 0 12px' }}>Розмір одягу = зріст дитини у сантиметрах. Якщо вагаєтесь — оберіть більший.</p>
+      <SizeTable head={['Розмір','Вік','Вага']} rows={rows} />
+      <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20, margin:'22px 0 6px' }}>Взуття</h2>
+      <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 0 12px', lineHeight:1.5 }}>Поставте дитину на аркуш паперу й обведіть стопу. До довжини стопи додайте 0,5–1 см на зиму — це і є потрібна довжина устілки. У різних фабрик сітка трохи відрізняється, тож у магазині підкажемо точно.</p>
+      <SizeTable head={['Розмір','Устілка, см','Вік (орієнтовно)']} rows={SHOE_ROWS} />
     </div>
+  );
+}
+const SHOE_ROWS = [['22','14,0','1,5–2 р'],['23','14,5','2 р'],['24','15,0','2–2,5 р'],['25','16,0','2,5–3 р'],['26','16,5','3 р'],['27','17,0','3–4 р'],['28','17,5','4 р'],['29','18,5','4–5 р'],['30','19,0','5 р'],['31','19,5','5–6 р'],['32','20,5','6–7 р'],['33','21,0','7 р'],['34','21,5','8 р'],['35','22,5','8–9 р'],['36','23,0','9–10 р']];
+function SizeTable({ head, rows }) {
+  return (
+    <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0, background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-md)', overflow:'hidden', fontSize:14 }}>
+      <thead><tr style={{ background:'var(--pink-500)', color:'#fff' }}>{head.map(h=> <th key={h} scope="col" style={{ padding:'11px 14px', textAlign:'left', fontWeight:800, fontSize:13 }}>{h}</th>)}</tr></thead>
+      <tbody>{rows.map((r,i)=>(
+        <tr key={i} style={{ background:i%2?'var(--cream)':'#fff' }}>
+          {r.map((c,j)=> j===0 ? <th key={j} scope="row" style={{ padding:'10px 14px', textAlign:'left', fontWeight:800, color:'var(--ink-900)' }}>{c}</th>
+            : <td key={j} style={{ padding:'10px 14px', fontWeight:600, color:'var(--ink-600)' }}>{c}</td>)}
+        </tr>
+      ))}</tbody>
+    </table>
   );
 }
 

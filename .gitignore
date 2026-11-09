@@ -1,0 +1,5 @@
+# Product feed written by automation/shop_feed.py (alisa-shop-docs repo). Real stock and prices from Torgsoft:
+# local preview only. Never commit or publish these files without an explicit decision.
+ui_kits/webshop/feed/feed.local.js
+ui_kits/webshop/feed/sample.js
+*.tmp

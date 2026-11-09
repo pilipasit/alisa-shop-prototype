@@ -10,10 +10,36 @@ const I = Ud.Icon;
 
 const TAB_ROUTES = { home:'home', catalog:'search', cart:'cart', stores:'stores', linkbio:'user' };
 
+/* the cart survives a reload (per data source, so demo and real goods never mix). Browser storage can be
+   unavailable (private mode) — then the cart simply lives in memory as before. */
+const CART_KEY = 'alisa.cart.' + Sd.SOURCE.kind;
+function loadCart() {
+  try { const c = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    return Array.isArray(c) ? c.filter(i => i && i.p && i.qty > 0) : []; } catch (_) { return []; }
+}
+function saveCart(c) { try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch (_) {} }
+window.AlisaCart = { loadCart, saveCart };
+
+/* dialogs: Esc closes, focus moves into the dialog and back to where it was */
+function useDialog(onClose) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const prev = document.activeElement;
+    const el = ref.current;
+    if (el) { const f = el.querySelector('input,button,[tabindex]:not([tabindex="-1"])'); (f || el).focus(); }
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); if (prev && prev.focus) prev.focus(); };
+  }, []);
+  return ref;
+}
+window.AlisaDialog = { useDialog };
+
 function App() {
   const [stack, setStack] = React.useState([{ r:'home', p:{} }]);
   const cur = stack[stack.length-1];
-  const [cart, setCart] = React.useState([]);
+  const [cart, setCart] = React.useState(loadCart);
+  React.useEffect(()=>{ saveCart(cart); }, [cart]);
   const [overlay, setOverlay] = React.useState(null); // 'filters'|'dm'|'search'|'menu'
   const [toast, setToast] = React.useState(null);
   const scrollRef = React.useRef(null);
@@ -26,11 +52,13 @@ function App() {
   const tabNav = (r) => setStack([{ r, p:{} }]);
 
   const cartCount = cart.reduce((s,i)=>s+i.qty,0);
-  const addToCart = (p, size=null, qty=1) => {
+  const addToCart = (p0, size0=null, qty=1) => {
+    const { p, size } = Sd.cartLine(p0, size0);  /* real goods: Torgsoft code + price of that size */
     setCart(c => {
       const k = c.findIndex(i=>i.p.id===p.id && i.size===size);
-      if(k>=0){ const n=[...c]; n[k]={...n[k],qty:n[k].qty+qty}; return n; }
-      return [...c, { p, size, qty }];
+      const max = Sd.maxQty(p);
+      if(k>=0){ const n=[...c]; n[k]={...n[k],qty:Math.min(max, n[k].qty+qty)}; return n; }
+      return [...c, { p, size, qty: Math.min(max, qty) }];
     });
     setToast(`Додано: ${p.name}`); setTimeout(()=>setToast(null), 1800);
   };
@@ -38,21 +66,21 @@ function App() {
   const removeItem = (idx)=> setCart(c=>c.filter((_,i)=>i!==idx));
   const placeOrder = (res)=>{ nav('confirm', res || {}); setCart([]); };
 
-  const TITLES = { catalog:'Каталог', product:'Товар', cart:'Кошик', checkout:'Оформлення', confirm:'Готово', stores:'Магазини', sale:'Розпродаж', linkbio:'Аліса', sizeguide:'Таблиця розмірів', info:'Інформація' };
+  const TITLES = { catalog:'Каталог', product:'Товар', cart:'Кошик', checkout:'Резерв', confirm:'Готово', stores:'Магазини', sale:'Розпродаж', linkbio:'Аліса', sizeguide:'Таблиця розмірів', info:'Інформація' };
   const showLogo = cur.r==='home';
   const canBack = stack.length>1;
 
   let screen;
   if(cur.r==='home') screen = <Scr.HomeScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='catalog') screen = <Scr.CatalogScreen nav={nav} addToCart={addToCart} params={cur.p} openFilters={()=>setOverlay('filters')} />;
-  else if(cur.r==='product') screen = <Scr.ProductScreen nav={nav} addToCart={addToCart} params={cur.p} openDM={()=>setOverlay('dm')} />;
+  else if(cur.r==='product') screen = <Scr.ProductScreen key={cur.p.id} nav={nav} addToCart={addToCart} params={cur.p} openDM={()=>setOverlay('dm')} />;
   else if(cur.r==='cart') screen = <Scr.CartScreen nav={nav} cart={cart} setQty={setQty} removeItem={removeItem} />;
   else if(cur.r==='checkout') screen = <Scr.CheckoutScreen nav={nav} cart={cart} placeOrder={placeOrder} />;
   else if(cur.r==='confirm') screen = <Scr.ConfirmScreen nav={tabNav} params={cur.p} />;
   else if(cur.r==='stores') screen = <Scr.StoresScreen nav={nav} />;
   else if(cur.r==='sale') screen = <Scr.SaleScreen nav={nav} addToCart={addToCart} />;
   else if(cur.r==='linkbio') screen = <Scr.LinkBioScreen nav={nav} />;
-  else if(cur.r==='sizeguide') screen = <SizeGuide />;
+  else if(cur.r==='sizeguide') screen = <Scr.SizeGuide />;
   else if(cur.r==='info') screen = <Scr.InfoScreen nav={nav} params={cur.p} />;
 
   const isBio = cur.r==='linkbio';
@@ -74,8 +102,8 @@ function App() {
           <div style={{ display:'flex', gap:2 }}>
             <AIb aria-label="Пошук" variant="ghost" onClick={()=>setOverlay('search')}>{I('search')}</AIb>
             <div style={{ position:'relative' }}>
-              <AIb aria-label="Кошик" variant="ghost" onClick={()=>nav('cart')}>{I('shopping-bag')}</AIb>
-              {cartCount>0 && <span className="cartdot">{cartCount}</span>}
+              <AIb aria-label={cartCount>0 ? `Кошик, товарів: ${cartCount}` : 'Кошик'} variant="ghost" onClick={()=>nav('cart')}>{I('shopping-bag')}</AIb>
+              {cartCount>0 && <span className="cartdot" aria-hidden="true">{cartCount}</span>}
             </div>
           </div>
         </header>
@@ -87,14 +115,14 @@ function App() {
       </main>
 
       {/* bottom nav */}
-      <nav className="bottomnav">
+      <nav className="bottomnav" aria-label="Основна навігація">
         {[['home','Головна','home'],['catalog','Каталог','layout-grid'],['cart','Кошик','shopping-bag'],['stores','Магазини','map-pin'],['linkbio','Контакти','phone']].map(t=>{
           const active = cur.r===t[0] || (t[0]==='catalog'&&['product','sale'].includes(cur.r)) || (t[0]==='cart'&&['checkout','confirm'].includes(cur.r));
           return (
-            <button key={t[0]} className={'navbtn'+(active?' on':'')} onClick={()=>tabNav(t[0]==='catalog'?'catalog':t[0])}>
+            <button key={t[0]} type="button" className={'navbtn'+(active?' on':'')} aria-current={active?'page':undefined} onClick={()=>tabNav(t[0]==='catalog'?'catalog':t[0])}>
               <span style={{ position:'relative' }}>
-                <i data-lucide={t[2]} style={{ width:22, height:22 }}></i>
-                {t[0]==='cart'&&cartCount>0 && <span className="navdot">{cartCount}</span>}
+                <i data-lucide={t[2]} style={{ width:22, height:22 }} aria-hidden="true"></i>
+                {t[0]==='cart'&&cartCount>0 && <span className="navdot" aria-label={`${cartCount} у кошику`}>{cartCount}</span>}
               </span>
               <span>{t[1]}</span>
             </button>
@@ -102,21 +130,23 @@ function App() {
         })}
       </nav>
 
-      {toast && <div className="toast"><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
+      <div aria-live="polite" style={Ud.SR}>{toast || ''}</div>
+      {toast && <div className="toast" aria-hidden="true"><i data-lucide="check-circle" style={{width:18,height:18}}></i>{toast}</div>}
 
       {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} initial={cur.r==='catalog'?cur.p:null} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
       {overlay==='dm' && <DMSheet onClose={()=>setOverlay(null)} />}
       {overlay==='search' && <SearchOverlay onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} addToCart={addToCart} />}
-      {overlay==='menu' && <MenuDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);tabNav(r==='catalog'?'catalog':r);if(p)setStack([{r,p}]);}} />}
+      {overlay==='menu' && <MenuDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);setStack([{ r, p: p || {} }]);}} />}
     </div>
   );
 }
 
 /* ---------- overlays ---------- */
-function Sheet({ children, onClose, side }) {
+function Sheet({ children, onClose, side, label }) {
+  const ref = useDialog(onClose);
   return (
     <div className="ovl" onClick={onClose}>
-      <div className={'sheet '+(side||'bottom')} onClick={e=>e.stopPropagation()}>{children}</div>
+      <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={'sheet '+(side||'bottom')} onClick={e=>e.stopPropagation()}>{children}</div>
     </div>
   );
 }
@@ -128,11 +158,12 @@ function FiltersDrawer({ onClose, nav, initial }) {
   const Chip = Ud.FilterChip;
   const grp = (title, children)=> <div style={{marginBottom:18}}><div style={{fontWeight:800,fontSize:13,color:'var(--ink-900)',marginBottom:8}}>{title}</div><div style={{display:'flex',flexWrap:'wrap',gap:8}}>{children}</div></div>;
   return (
-    <Sheet onClose={onClose} side="right">
+    <Sheet onClose={onClose} side="right" label="Фільтри">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <span style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20 }}>Фільтри</span>
         <AIb aria-label="Закрити" variant="ghost" onClick={onClose}>{I('x')}</AIb>
       </div>
+      {Sd.COLLECTIONS.length > 0 && grp('Добірка', Sd.COLLECTIONS.map(c=> <Chip key={c.id} label={c.short} color="pink" active={sel.col===c.id} onClick={()=>t('col',c.id)} />))}
       {grp('Категорія', Sd.CATS.filter(c=>c.id!=='sale').map(c=> <Chip key={c.id} label={c.uk} color={c.color} active={sel.cat===c.id} onClick={()=>t('cat',c.id)} />))}
       {grp('Вік', ['0–2','3–5','6–9','10–12'].map(a=> <Chip key={a} label={a+' р'} active={sel.age===a} onClick={()=>t('age',a)} />))}
       {grp('Розмір (зріст)', Sd.SIZES_CLOTHING.map(s=> <Chip key={s} label={s} active={sel.size===s} onClick={()=>setSel(x=>({...x,size:x.size===s?null:s}))} />))}
@@ -152,16 +183,16 @@ function FiltersDrawer({ onClose, nav, initial }) {
 }
 
 function DMSheet({ onClose }) {
-  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня 9:00–21:00','https://www.instagram.com/alisa.kids.shop/'],['Viber','phone','var(--info)','Швидка відповідь','viber://chat?number=%2B380988222964'],['Telegram','send','var(--blue-500)','Зручно з телефона',null],['Зателефонувати','phone-call','var(--green-600)',(Sd.PHONE||'+380 98 822 29 64'),'tel:+380988222964']];
+  const opts = [['Instagram Direct','instagram','var(--pink-500)','Відповідаємо щодня','https://www.instagram.com/alisa.kids.shop/'],['Viber','phone','var(--info)','Швидка відповідь, можна надіслати фото','viber://chat?number=%2B380988222964'],['Зателефонувати','phone-call','var(--green-600)',(Sd.PHONE||'+380 98 822 29 64'),'tel:+380988222964']];
   const pick = (o)=>{ if(o[4]) window.open(o[4],'_blank'); onClose(); };
   return (
-    <Sheet onClose={onClose}>
+    <Sheet onClose={onClose} label="Напишіть нам">
       <div style={{ width:40, height:5, borderRadius:99, background:'var(--ink-200)', margin:'0 auto 16px' }}></div>
       <div style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:20, marginBottom:4 }}>Напишіть нам</div>
       <p style={{ fontSize:14, color:'var(--ink-500)', fontWeight:600, margin:'0 0 16px' }}>Підкажемо наявність, розмір і допоможемо із замовленням.</p>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
         {opts.map(o=>(
-          <button key={o[0]} onClick={()=>pick(o)} style={{ display:'flex', alignItems:'center', gap:14, background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-md)', padding:'13px 16px', cursor:'pointer', textAlign:'left' }}>
+          <button key={o[0]} type="button" onClick={()=>pick(o)} style={{ display:'flex', alignItems:'center', gap:14, background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-md)', padding:'13px 16px', cursor:'pointer', textAlign:'left' }}>
             <i data-lucide={o[1]} style={{ width:24, height:24, color:o[2] }}></i>
             <div style={{ flex:1 }}><div style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:16, color:'var(--ink-900)' }}>{o[0]}</div><div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600 }}>{o[3]}</div></div>
             <i data-lucide="chevron-right" style={{ width:18, height:18, color:'var(--ink-300)' }}></i>
@@ -175,18 +206,21 @@ function DMSheet({ onClose }) {
 
 function SearchOverlay({ onClose, nav, addToCart }) {
   const [q, setQ] = React.useState('');
-  const res = q.trim() ? Sd.PRODUCTS.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.id.includes(q)) : [];
-  const popular = ['Комбінезон','Кросівки','Іграшки','Шапка','Рюкзак'];
+  const ql = q.trim().toLowerCase();
+  const res = ql ? Sd.search(q) : [];  /* every word must match; top 40 by popularity */
+  const popular = ['Комбінезон','Чоботи','Шапка','Піжама','Настільна гра','Конструктор'];
+  const ref = useDialog(onClose);
   return (
-    <div className="ovl-full">
+    <div className="ovl-full" ref={ref} role="dialog" aria-modal="true" aria-label="Пошук">
       <div style={{ display:'flex', gap:10, alignItems:'center', padding:'14px 16px', borderBottom:'1px solid var(--ink-100)' }}>
         <div style={{ flex:1, position:'relative' }}>
           <i data-lucide="search" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', width:18, height:18, color:'var(--ink-400)' }}></i>
-          <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px 12px 42px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:15, outline:'none' }} />
+          <input autoFocus type="search" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px 12px 42px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:15, outline:'none' }} />
         </div>
-        <button onClick={onClose} style={{ background:'none', border:0, fontWeight:700, fontSize:15, color:'var(--pink-600)', cursor:'pointer' }}>Скасувати</button>
+        <button type="button" onClick={onClose} style={{ background:'none', border:0, fontWeight:700, fontSize:15, color:'var(--pink-600)', cursor:'pointer' }}>Скасувати</button>
       </div>
       <div style={{ padding:16, overflowY:'auto' }}>
+        {ql && res.length>0 && <div role="status" style={{ fontSize:13, color:'var(--ink-500)', fontWeight:700, marginBottom:10 }}>Знайдено: {res.length}{res.length===40?'+':''}</div>}
         {!q.trim() && (
           <div>
             <div style={{ fontWeight:800, fontSize:13, color:'var(--ink-500)', marginBottom:10 }}>Популярні запити</div>
@@ -205,18 +239,21 @@ function SearchOverlay({ onClose, nav, addToCart }) {
 }
 
 function MenuDrawer({ onClose, nav }) {
-  const links = [['Головна','home','home'],['Каталог','layout-grid','catalog'],['Розпродаж','badge-percent','sale'],['Новинки','sparkles','catalog'],['Іграшки','blocks','catalog'],['Магазини','map-pin','stores'],['Контакти / Direct','phone','linkbio']];
+  const links = [['Головна','home','home'],['Каталог','layout-grid','catalog',{}]]
+    .concat(Sd.COLLECTIONS.map(c => [c.short === 'Зима' ? 'Тепло на зиму' : c.short === 'Подарунки' ? 'Подарунки до свят' : c.title, c.icon, 'catalog', { col:c.id }]))
+    .concat(Sd.isNew().length ? [['Новинки','sparkles','catalog',{filter:'new'}]] : [])
+    .concat([['Іграшки','blocks','catalog',{cat:'toys'}],['Розпродаж','badge-percent','sale'],['Магазини','map-pin','stores'],['Контакти','phone','linkbio']]);
   const info = [['Доставка і оплата',()=>nav('info',{doc:'delivery'})],['Обмін і повернення',()=>nav('info',{doc:'returns'})],['Таблиця розмірів',()=>nav('sizeguide')],['Про нас',()=>nav('info',{doc:'about'})],['Політика конфіденційності',()=>nav('info',{doc:'privacy'})],['Публічна оферта',()=>nav('info',{doc:'offer'})]];
   return (
-    <Sheet onClose={onClose} side="left">
+    <Sheet onClose={onClose} side="left" label="Меню">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <img src="../../assets/logo-primary.svg" alt="Аліса" style={{ height:30 }} />
         <AIb aria-label="Закрити" variant="ghost" onClick={onClose}>{I('x')}</AIb>
       </div>
       <div style={{ display:'flex', flexDirection:'column' }}>
         {links.map(l=>(
-          <button key={l[0]} onClick={()=>nav(l[2])} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 4px', background:'none', border:0, borderBottom:'1px solid var(--ink-100)', cursor:'pointer', textAlign:'left' }}>
-            <i data-lucide={l[1]} style={{ width:22, height:22, color:'var(--pink-500)' }}></i>
+          <button key={l[0]} type="button" onClick={()=>nav(l[2], l[3])} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 4px', background:'none', border:0, borderBottom:'1px solid var(--ink-100)', cursor:'pointer', textAlign:'left' }}>
+            <i data-lucide={l[1]} style={{ width:22, height:22, color:'var(--pink-500)' }} aria-hidden="true"></i>
             <span style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:17, color:'var(--ink-900)' }}>{l[0]}</span>
           </button>
         ))}

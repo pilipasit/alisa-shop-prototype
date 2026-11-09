@@ -13,6 +13,8 @@ const C100 = { blue:'var(--blue-100)', green:'var(--green-100)', yellow:'var(--y
 const C600 = { blue:'var(--blue-600)', green:'var(--green-600)', yellow:'var(--yellow-600)', pink:'var(--pink-600)', pinkDeep:'var(--pink-600)', gray:'var(--ink-500)' };
 
 const Icon = (n, props={}) => <i data-lucide={n} {...props}></i>;
+/* visually hidden, still read by screen readers */
+const SR = { position:'absolute', width:1, height:1, padding:0, margin:-1, overflow:'hidden', clip:'rect(0 0 0 0)', whiteSpace:'nowrap', border:0 };
 
 /* ---- a11y foundation: visible focus rings + a reset class so real <button>s can look like anything ---- */
 (function injectA11yCSS(){
@@ -23,6 +25,7 @@ const Icon = (n, props={}) => <i data-lucide={n} {...props}></i>;
 .a-click{appearance:none;-webkit-appearance:none;background:none;border:0;margin:0;padding:0;
   font:inherit;color:inherit;text-align:inherit;cursor:pointer}
 .a-click::-moz-focus-inner{border:0;padding:0}
+.a-hscroll::-webkit-scrollbar{display:none}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
 [tabindex]:focus-visible,.a-click:focus-visible{outline:3px solid var(--pink-500);outline-offset:2px}
 .a-skip{position:absolute;left:-9999px;top:0;z-index:200}
@@ -50,15 +53,20 @@ function Clickable({ children, style, label, title, ...rest }) {
 }
 
 /* product/category photo — real image when `src` is set, else soft-tint placeholder */
-function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false, src, alt }) {
+function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false, src, alt, kind }) {
   const col = cat ? cat.color : 'pink';
   const ic = icon || (cat ? cat.icon : 'image');
   const [failed, setFailed] = React.useState(false);
   if (src && !failed) {
     return (
-      <div style={{ aspectRatio: ratio, width: '100%', background: '#fff', borderRadius: radius, overflow: 'hidden' }}>
-        <img src={src} alt={alt || (cat ? cat.uk : 'Товар')} loading="lazy" onError={() => setFailed(true)}
+      <div style={{ aspectRatio: ratio, width: '100%', background: '#fff', borderRadius: radius, overflow: 'hidden', position: 'relative' }}>
+        <img src={src} alt={(kind === 'illustration' ? 'Ілюстрація: ' : '') + (alt || (cat ? cat.uk : 'Товар'))} loading="lazy" decoding="async"
+          width="640" height="640" onError={() => setFailed(true)}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        {/* generated pictures must never pass for product photos */}
+        {kind === 'illustration' && <span aria-hidden="true" style={{ position: 'absolute', left: 8, bottom: 8, background: 'rgba(255,255,255,.92)',
+          color: 'var(--ink-700)', border: '1px solid var(--ink-200)', borderRadius: 'var(--radius-pill)', padding: big ? '4px 10px' : '2px 7px',
+          fontSize: big ? 12 : 10, fontWeight: 800, lineHeight: 1.3 }}>Ілюстрація</span>}
       </div>
     );
   }
@@ -81,8 +89,9 @@ function StoreDots({ av, compact = false }) {
     const st = av[s];
     const bg = st==='in' ? 'var(--green-500)' : st==='last' ? 'var(--yellow-500)' : 'var(--ink-300)';
     return (
-      <span key={s} title={s} style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:12, fontWeight:800, color:'var(--ink-500)' }}>
-        <span style={{ width:8, height:8, borderRadius:'50%', background:bg }}></span>{s}
+      <span key={s} title={s + ': ' + (AV_LABEL[st] || AV_LABEL.out).uk} style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:12, fontWeight:800, color:'var(--ink-500)', position:'relative' }}>
+        <span aria-hidden="true" style={{ width:8, height:8, borderRadius:'50%', background:bg }}></span>{s}
+        <span style={SR}>{' — ' + (AV_LABEL[st] || AV_LABEL.out).uk.toLowerCase()}</span>
       </span>
     );
   };
@@ -93,6 +102,7 @@ function Price({ p, size = 28 }) {
   return (
     <div style={{ display:'flex', alignItems:'baseline', gap:8, flexWrap:'wrap' }}>
       {p.oldPrice && <span style={{ fontWeight:800, fontSize:size*0.52, color:'var(--ink-500)', textDecoration:'line-through', textDecorationColor:'var(--pink-400)', whiteSpace:'nowrap' }}>{p.oldPrice} ₴</span>}
+      {p.priceMax > p.price && <span style={{ fontWeight:700, fontSize:size*0.5, color:'var(--ink-500)' }}>від</span>}
       <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:size, color: p.oldPrice?'var(--pink-600)':'var(--ink-900)', lineHeight:.9, whiteSpace:'nowrap' }}>{p.price} ₴</span>
     </div>
   );
@@ -112,12 +122,12 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
         {b && <Badge tone={b.t}>{b.l}</Badge>}
         {p.oldPrice && p.badge!=='sale' && <Badge tone="sale">−{disc(p)}%</Badge>}
       </div>
-      <div onClick={onOpen} style={{ cursor:'pointer', padding:10 }}>
-        <Photo cat={cat} src={p.img} alt={p.name} />
-      </div>
+      <Clickable onClick={onOpen} tabIndex={-1} aria-hidden="true" style={{ display:'block', width:'100%', padding:10 }}>
+        <Photo cat={cat} src={p.img} alt={p.name} kind={p.imgKind} />
+      </Clickable>
       <div style={{ padding:'4px 12px 14px', display:'flex', flexDirection:'column', flex:1 }}>
-        <div onClick={onOpen} style={{ cursor:'pointer', fontWeight:800, fontSize:15, color:'var(--ink-900)', lineHeight:1.25, minHeight:38 }}>{p.name}</div>
-        <div style={{ fontSize:11.5, color:'var(--ink-500)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.id} · {p.ages!=='one'&&p.ages!=='0+'?'розм. ':''}{p.ages==='one'?'один розмір':p.ages}</div>
+        <Clickable onClick={onOpen} style={{ display:'block', width:'100%', fontWeight:800, fontSize:15, color:'var(--ink-900)', lineHeight:1.25, minHeight:38 }}>{p.name}</Clickable>
+        <div style={{ fontSize:11.5, color:'var(--ink-500)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.art||p.id} · {p.ages!=='one'&&p.ages!=='0+'?'розм. ':''}{p.ages==='one'?'один розмір':p.ages}</div>
         <Price p={p} size={24} />
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:6, flexWrap:'wrap', margin:'10px 0 12px' }}>
           <span style={{ fontSize:12, fontWeight:800, color:statusColor }}>{statusLabel}</span>
@@ -125,7 +135,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
         </div>
         <div style={{ marginTop:'auto', display:'flex', gap:8, alignItems:'stretch' }}>
           <Button variant="secondary" size="sm" onClick={onOpen} style={{ flex:'1 1 auto', minWidth:0 }}>Детальніше</Button>
-          {anyIn || anyLast ? <span style={{ flex:'0 0 auto', display:'inline-flex' }}><IconButton aria-label="Додати в кошик" variant="solid" size="sm" onClick={onAdd}>{Icon('shopping-bag')}</IconButton></span> : null}
+          {anyIn || anyLast ? <span style={{ flex:'0 0 auto', display:'inline-flex' }}><IconButton aria-label={window.AlisaShop.needsSize(p)?'Обрати розмір':'Додати в кошик'} variant="solid" size="sm" onClick={window.AlisaShop.needsSize(p)?onOpen:onAdd}>{Icon('shopping-bag')}</IconButton></span> : null}
         </div>
       </div>
     </div>
@@ -202,7 +212,7 @@ function TrustBar({ items }) {
   const def = items || [
     ['repeat','Обмін 14 днів','із чеком'],
     ['store','Приміряйте у магазині','А-1 · А-2 · А-3'],
-    ['wallet','Оплата при отриманні','готівка або картка'],
+    ['wallet','Оплата в магазині','готівка або картка'],
   ];
   return (
     <div style={{ display:'grid', gridTemplateColumns:`repeat(${def.length},1fr)`, gap:8, margin:'14px 0' }}>
@@ -229,7 +239,7 @@ function SectionHead({ title, action, onAction }) {
 /* horizontal scroll carousel */
 function HScroll({ children, w = 178 }) {
   return (
-    <div style={{ display:'flex', gap:14, overflowX:'auto', margin:'0 -16px', padding:'4px 16px 8px', scrollSnapType:'x mandatory', WebkitOverflowScrolling:'touch' }}>
+    <div className="a-hscroll" style={{ display:'flex', gap:14, overflowX:'auto', margin:'0 -16px', padding:'4px 16px 8px', scrollSnapType:'x mandatory', WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
       {React.Children.map(children, c => <div style={{ flex:`0 0 ${w}px`, scrollSnapAlign:'start' }}>{c}</div>)}
     </div>
   );
@@ -251,7 +261,7 @@ function PromoBanner({ color='pink', kicker, title, sub, cta, icon, onClick }) {
 
 function FilterChip({ label, active, onClick, color }) {
   return (
-    <button onClick={onClick} style={{ fontFamily:'var(--font-body)', fontWeight:700, fontSize:13.5, padding:'8px 14px', borderRadius:'var(--radius-pill)', cursor:'pointer',
+    <button type="button" aria-pressed={!!active} onClick={onClick} style={{ fontFamily:'var(--font-body)', fontWeight:700, fontSize:13.5, padding:'8px 14px', borderRadius:'var(--radius-pill)', cursor:'pointer',
       border:'2px solid '+(active?(color?C500[color]:'var(--pink-500)'):'var(--ink-200)'), background: active?(color?C100[color]:'var(--pink-100)'):'#fff', color: active?(color?C600[color]:'var(--pink-600)'):'var(--ink-700)', whiteSpace:'nowrap', display:'inline-flex', alignItems:'center', gap:6 }}>
       {label}
     </button>
@@ -273,13 +283,13 @@ function Breadcrumbs({ items }) {
   );
 }
 
-function Qty({ value, onChange }) {
+function Qty({ value, onChange, max = 99, label = 'Кількість' }) {
   const btn = { width:38, height:38, border:'2px solid var(--ink-200)', background:'#fff', borderRadius:'var(--radius-pill)', fontWeight:800, fontSize:18, cursor:'pointer', color:'var(--ink-700)', display:'flex', alignItems:'center', justifyContent:'center' };
   return (
     <div style={{ display:'inline-flex', alignItems:'center', gap:12 }}>
-      <button style={btn} onClick={()=>onChange(Math.max(1,value-1))}>−</button>
-      <span style={{ fontWeight:800, fontSize:18, minWidth:24, textAlign:'center' }}>{value}</span>
-      <button style={btn} onClick={()=>onChange(value+1)}>+</button>
+      <button type="button" style={{ ...btn, opacity: value<=1 ? .45 : 1 }} aria-label={label + ': менше'} disabled={value<=1} onClick={()=>onChange(Math.max(1,value-1))}>−</button>
+      <span aria-live="polite" style={{ fontWeight:800, fontSize:18, minWidth:24, textAlign:'center' }}><span style={SR}>{label + ': '}</span>{value}</span>
+      <button type="button" style={{ ...btn, opacity: value>=max ? .45 : 1 }} aria-label={label + ': більше'} disabled={value>=max} title={value>=max ? 'Більше немає в магазинах' : undefined} onClick={()=>onChange(Math.min(max,value+1))}>+</button>
     </div>
   );
 }
@@ -295,13 +305,15 @@ function StoreCard({ s, av, onReserve }) {
           <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600 }}>{s.area}</div>
         </div>
       </div>
-      <div style={{ aspectRatio:'16/7', background:'var(--ink-100)', borderRadius:'var(--radius-md)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--ink-500)', gap:6, marginBottom:12 }}>
-        <i data-lucide="map-pin" style={{width:22,height:22}}></i><span style={{fontWeight:700,fontSize:12}}>Мапа</span>
-      </div>
+      <a href={'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.mapQuery || (s.addr + ', ' + s.city)))} target="_blank" rel="noopener"
+        style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'var(--blue-100)', color:'var(--blue-600)', borderRadius:'var(--radius-md)',
+          padding:'12px', marginBottom:12, fontWeight:800, fontSize:13.5, textDecoration:'none' }}>
+        <i data-lucide="map" style={{width:18,height:18}} aria-hidden="true"></i>Відкрити на мапі<span style={SR}> (Google Maps, нова вкладка)</span>
+      </a>
       <div style={{ display:'flex', flexDirection:'column', gap:7, fontSize:13.5, color:'var(--ink-700)', fontWeight:600 }}>
         <span style={{display:'flex',gap:8,alignItems:'center'}}><i data-lucide="map-pin" style={{width:15,height:15,color:'var(--pink-500)'}}></i>{s.addr}</span>
-        <span style={{display:'flex',gap:8,alignItems:'center'}}><i data-lucide="clock" style={{width:15,height:15,color:'var(--pink-500)'}}></i>{s.hours}</span>
-        <span style={{display:'flex',gap:8,alignItems:'center'}}><i data-lucide="phone" style={{width:15,height:15,color:'var(--pink-500)'}}></i>{s.phone}</span>
+        <span style={{display:'flex',gap:8,alignItems:'center'}}><i data-lucide="clock" style={{width:15,height:15,color:'var(--pink-500)'}} aria-hidden="true"></i>{s.hours || window.AlisaShop.HOURS_TBD}</span>
+        <a href={'tel:' + s.phone.replace(/[^+\d]/g,'')} style={{display:'flex',gap:8,alignItems:'center',color:'inherit'}}><i data-lucide="phone" style={{width:15,height:15,color:'var(--pink-500)'}} aria-hidden="true"></i>{s.phone}</a>
       </div>
       {st && (
         <div style={{ marginTop:12 }}>
@@ -314,6 +326,6 @@ function StoreCard({ s, av, onReserve }) {
   );
 }
 
-window.AlisaUI = { Icon, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
+window.AlisaUI = { Icon, SR, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
 
 })();

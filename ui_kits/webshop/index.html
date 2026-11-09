@@ -7,13 +7,13 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — дитячий магазин · одяг, взуття, іграшки</title>
-<meta name="description" content="Інтернет-магазин дитячого одягу, взуття та іграшок «Аліса». Кам'янське та Дніпро — 3 магазини. Доставка Новою поштою, самовивіз безкоштовно.">
+<meta name="description" content="Інтернет-магазин дитячого одягу, взуття та іграшок «Аліса». Кам'янське та Дніпро — 3 магазини. Резерв онлайн і безкоштовний самовивіз з магазину.">
 <meta name="theme-color" content="#df0380">
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="uk_UA">
 <meta property="og:title" content="Аліса — дитячий магазин">
-<meta property="og:description" content="Одяг, взуття та іграшки для дітей. Кам'янське · Дніпро. Доставка Новою поштою.">
+<meta property="og:description" content="Одяг, взуття та іграшки для дітей. Кам'янське · Дніпро. Резерв онлайн — самовивіз з магазину.">
 <meta property="og:image" content="https://pilipasit.github.io/alisa-shop-prototype/assets/logo-primary.svg">
 <!-- PROTOTYPE ONLY: keeps draft legal text, demo reviews and placeholder
      addresses out of search. REMOVE this tag at launch. -->
@@ -39,25 +39,8 @@
     "addressRegion": "Дніпропетровська область",
     "addressCountry": "UA"
   },
-  "openingHoursSpecification": [
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ],
-      "opens": "09:00",
-      "closes": "20:00"
-    }
-  ],
   "sameAs": [
-    "https://www.instagram.com/alisa.kids.shop/",
-    "https://www.facebook.com/alisa.kids.ua/"
+    "https://www.instagram.com/alisa.kids.shop/"
   ]
 }
 </script>
@@ -102,7 +85,8 @@
   @keyframes slideL{from{transform:translateX(-100%)}to{transform:translateX(0)}}
 
   select{outline:none}
-  @media (max-width:460px){ .stagewrap{padding:0} .phone{width:100vw;height:100vh;max-height:100vh;border-radius:0;box-shadow:none} }
+  /* on a real phone: no mock frame, no fake status bar, no prototype toolbar — just the shop */
+  @media (max-width:460px){ .stagewrap{padding:0} .toolbar,.statusbar{display:none} .phone{width:100vw;height:100vh;height:100dvh;max-height:none;border-radius:0;box-shadow:none} }
 </style></head>
 <body>
 <div class="stagewrap">
@@ -110,6 +94,9 @@
     <span class="lbl">Аліса · інтернет-магазин</span>
     <a href="desktop.html"><i data-lucide="monitor" style="width:15px;height:15px"></i>Десктоп</a>
     <a href="blueprint.html"><i data-lucide="map" style="width:15px;height:15px"></i>Блупринт + MVP</a>
+    <a data-local-only href="?data=demo" title="Старі демо-товари замість даних Torgsoft"><i data-lucide="flask-conical" style="width:15px;height:15px"></i>Демо-дані</a>
+    <a data-local-only href="?data=showcase" title="Лише 36 товарів вітрини — так виглядатиме публічна версія"><i data-lucide="star" style="width:15px;height:15px"></i>Вітрина</a>
+    <a data-local-only href="index.html" title="Каталог із Torgsoft (feed/feed.local.js або зразок)"><i data-lucide="database" style="width:15px;height:15px"></i>Дані Torgsoft</a>
   </div>
   <div id="app"></div>
 </div>
@@ -123,6 +110,18 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
+<!-- Real catalog from Torgsoft (automation/shop_feed.py in alisa-shop-docs, see SHOP-FEED.md). The feed files
+     are git-ignored and loaded ONLY on localhost, so the public site never requests them and shows the demo data.
+     Order: feed.local.js (full), sample.js (30 products), else demo. -->
+<!-- Curated showcase: 36 real models, public-safe (showcase/build_showcase.py, SITE-REVIEW.md). Loaded everywhere. -->
+<script src="showcase/showcase.js"></script>
+<script>
+(function(){
+  var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if (local) document.write('<script src="feed/sample.js"><\/script><script src="feed/feed.local.js"><\/script>');
+  else document.querySelectorAll('[data-local-only]').forEach(function(e){ e.remove(); });
+})();
+</script>
 <script type="text/babel" data-presets="react" src="data.jsx"></script>
 <script type="text/babel" data-presets="react" src="ui.jsx"></script>
 <script type="text/babel" data-presets="react" src="screens1.jsx"></script>

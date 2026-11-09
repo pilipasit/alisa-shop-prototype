@@ -2,7 +2,7 @@
 ;(function(){
 /* Alisa webshop — sample data, categories, stores. Shared via window.AlisaShop. */
 
-const CATS = [
+let CATS = [
   { id: 'clothing', uk: 'Одяг',      color: 'blue',   icon: 'shirt',      desc: 'Зручний та якісний одяг для дітей від народження до 12 років.' },
   { id: 'shoes',    uk: 'Взуття',    color: 'pink',   icon: 'footprints', desc: 'Взуття на кожен сезон — від першого кроку до школи.' },
   { id: 'toys',     uk: 'Іграшки',   color: 'green',  icon: 'blocks',     desc: 'Розвивальні та улюблені іграшки для будь-якого віку.' },
@@ -20,10 +20,12 @@ const CATS = [
 const ORDER_ENDPOINT = '';
 
 const PHONE = '+380 98 822 29 64';
+/* opening hours are not known yet (STORES.md) — never show invented ones */
+const HOURS_TBD = 'Години роботи уточнюйте за телефоном';
 const STORES = [
-  { id: 'A-1', name: 'Аліса А-1', city: 'Кам’янське', area: 'бульвар Будівельників', addr: 'бульвар Будівельників, 1-Б', hours: 'Пн–Нд 9:00–20:00', phone: PHONE },
-  { id: 'A-2', name: 'Аліса А-2', city: 'Кам’янське', area: 'Правий берег · ТРЦ «Дніпро Плаза»', addr: 'пр. Свободи, 51, 2 поверх', hours: 'Пн–Нд 10:00–21:00', phone: PHONE },
-  { id: 'A-3', name: 'Аліса А-3', city: 'Дніпро', area: 'Центр', addr: 'пр. Олександра Поля, 33', hours: 'Пн–Нд 9:00–21:00', phone: PHONE },
+  { id: 'A-1', name: 'Аліса А-1', city: 'Кам’янське', area: 'Лівий берег · ТЦ «Svitlo» · зуп. «Сонячний»', addr: 'бул. Будівельників, 1Б–1Е', hours: null, phone: PHONE },
+  { id: 'A-2', name: 'Аліса А-2', city: 'Кам’янське', area: 'ТРЦ «ЦУМ»', addr: 'пр. Тараса Шевченка, 9', hours: null, phone: '+380 68 457 63 87' },
+  { id: 'A-3', name: 'Аліса А-3', city: 'Дніпро', area: 'навпроти ТОЦ «Славутич»', addr: 'пр. Олександра Поля, 137', hours: null, phone: '+380 68 634 42 50' },
 ];
 
 // availability helper: 'in' | 'last' | 'out'
@@ -32,7 +34,7 @@ const P = (id, name, cat, price, oldPrice, ages, badge, av, hit, img) =>
 
 const IMG = (f) => '../../assets/products/' + f;
 
-const PRODUCTS = [
+let PRODUCTS = [
   P('104223', 'Комбінезон зимовий «Сніжинка»', 'clothing', 649, 999, '80–110', 'sale',   { 'A-1':'in','A-2':'in','A-3':'last' }, true,  IMG('snowsuit.jpg')),
   P('118540', 'Шапка з помпоном',              'clothing', 149, 229, '1–4 р',  'sale',   { 'A-1':'out','A-2':'in','A-3':'in' }, false, IMG('pompom-hat.jpg')),
   P('401290', 'Сукня святкова «Зірочка»',      'clothing', 549, null,'92–122', 'new',    { 'A-1':'in','A-2':'in','A-3':'in' }, true,  IMG('dress-star.jpg')),
@@ -71,7 +73,103 @@ const ATTRS = {
   '802001': { age:[3,10], g:'u', season:'summer' },  '802002': { age:[1,5],  g:'u', season:'all'    },
   '401501': { age:[3,8],  g:'g', season:'summer' },
 };
-PRODUCTS.forEach(p => Object.assign(p, ATTRS[p.id] || { age:[0,12], g:'u', season:'all' }));
+PRODUCTS.forEach(p => Object.assign(p, ATTRS[p.id] || { age:[0,12], g:'u', season:'all' }, { rank: p.hit ? 0 : 1, art: p.id }));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   REAL CATALOG from Torgsoft — written by automation/shop_feed.py (see SHOP-FEED.md).
+   feed/feed.local.js  → window.ALISA_FEED         full feed, local only (never commit/deploy)
+   feed/sample.js      → window.ALISA_FEED_SAMPLE  ≤ 30 products
+   Both are plain <script> files, so no fetch() and no server API is needed.
+   ?data=demo shows the old demo products, ?data=sample forces the sample.
+   ───────────────────────────────────────────────────────────────────────────── */
+/* CURATED SHOWCASE — showcase/showcase.js → window.ALISA_SHOWCASE (showcase/build_showcase.py in alisa-shop-docs).
+   36 real best-selling models with shop-friendly names, descriptions, collections and illustrations.
+   .overlay is applied to whatever catalog is shown; .feed is a small public-safe catalog of just these
+   models (stock capped, no barcodes) used where the full feed is not loaded, e.g. on GitHub Pages.
+   ?data=showcase forces it; ?data=demo still shows the old invented demo products. */
+const SHOWCASE = window.ALISA_SHOWCASE || null;
+const DATA_PARAM = (/[?&]data=(demo|sample|full|showcase)\b/.exec(location.search) || [])[1] || '';
+const SHOWCASE_FEED = SHOWCASE && SHOWCASE.feed || null;
+const FEED = DATA_PARAM === 'demo' ? null
+  : DATA_PARAM === 'sample' ? (window.ALISA_FEED_SAMPLE || null)
+  : DATA_PARAM === 'showcase' ? SHOWCASE_FEED
+  : (window.ALISA_FEED || SHOWCASE_FEED || window.ALISA_FEED_SAMPLE || null);
+
+/* look of the top-level groups of the proposed tree (CATALOG-AUDIT.md); unknown names get the default */
+const GROUP_LOOK = {
+  'Одяг':                { color:'blue',     icon:'shirt',        desc:'Одяг для дітей від народження до підлітків.' },
+  'Взуття':              { color:'pink',     icon:'footprints',   desc:'Взуття на кожен сезон — від першого кроку до школи.' },
+  'Аксесуари':           { color:'yellow',   icon:'glasses',      desc:'Шапки, панами, рукавички, прикраси та все для волосся.' },
+  'Іграшки':             { color:'green',    icon:'blocks',       desc:'Розвивальні та улюблені іграшки для будь-якого віку.' },
+  'Для малюків':         { color:'pink',     icon:'baby',         desc:'Годування, купання, ліжечка та візочки.' },
+  'Дитячий транспорт':   { color:'blue',     icon:'bike',         desc:'Велосипеди, самокати та каталки.' },
+  'Школа та канцелярія': { color:'blue',     icon:'backpack',     desc:'Рюкзаки та канцелярія для школи й садочка.' },
+  'Сезонні товари':      { color:'yellow',   icon:'snowflake',    desc:'Санки, ковзани, новорічне та карнавальне.' },
+  'Подарунки та свята':  { color:'pinkDeep', icon:'gift',         desc:'Подарунки, кульки та все для свята.' },
+  'Книги':               { color:'green',    icon:'book-open',    desc:'Книжки для малюків і школярів.' },
+  'Різне':               { color:'gray',     icon:'battery',      desc:'Батарейки та дрібниці.' },
+  'Інше':                { color:'gray',     icon:'package',      desc:'Товари, яким ще не призначено категорію.' },
+};
+/* demo ids used by banners/links in the screens -> groups of the real tree */
+const CAT_ALIAS = {};
+
+let SOURCE = { kind: 'demo' };
+if (FEED) {
+  const dt = new Date(FEED.data_as_of);
+  SOURCE = { kind: FEED.showcase ? 'showcase' : FEED.sample ? 'sample' : 'feed', draft: !!FEED.categories_draft, notes: FEED.notes,
+    capped: !!FEED.stock_capped,
+    dateOnly: isNaN(dt) ? FEED.data_as_of : dt.toLocaleDateString('uk-UA', { day:'numeric', month:'long' }),
+    asOf: isNaN(dt) ? FEED.data_as_of : dt.toLocaleDateString('uk-UA', { day:'numeric', month:'long' }) + ', ' + dt.toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' }),
+    total: (FEED.stats && FEED.stats.products) || FEED.products.length };
+  const look = (n) => GROUP_LOOK[n] || { color:'gray', icon:'package', desc:'' };
+  CATS = FEED.categories.map(c => ({ id:'g'+c.id, uk:c.name, ...look(c.name), count:c.count,
+    subs: c.children.map(ch => ({ id: ch.id, uk: ch.name, count: ch.count })) }));
+  const byName = (n) => (CATS.find(c => c.uk === n) || {}).id;
+  Object.assign(CAT_ALIAS, { clothing: byName('Одяг'), shoes: byName('Взуття'), toys: byName('Іграшки'),
+    baby: byName('Для малюків'), school: byName('Школа та канцелярія'), seasonal: byName('Сезонні товари') });
+
+  const avOf = (n) => n <= 0 ? 'out' : n === 1 ? 'last' : 'in';
+  const sizeLabel = (sz) => !sz.length ? 'one' : sz.length === 1 ? sz[0] : sz[0] + ' … ' + sz[sz.length-1];
+  PRODUCTS = FEED.products.map(p => {
+    const grp = 'g' + (p.category || '99.99').split('.')[0];
+    const av = {}; STORES.forEach(s => { av[s.id] = avOf((p.stock || {})[s.id] || 0); });
+    return {
+      id: p.id, art: p.articul || p.variants[0].id, name: p.name, nameTorgsoft: p.name_torgsoft,
+      cat: grp, sub: p.category, group: p.group, subgroup: p.subgroup, catStatus: p.category_status,
+      price: p.price, priceMax: p.price_max, oldPrice: null,
+      ages: sizeLabel(p.sizes || []), sizes: p.sizes || [],
+      badge: p.new ? 'new' : null, av, hit: !!p.popularity && p.popularity <= 24, rank: p.popularity || 1e9,
+      img: (p.images && p.images[0]) || null, description: p.description,
+      age: p.age || null, height: p.height || null, g: p.gender || null, season: p.season || null,
+      brand: p.brand, color: p.color, stock: p.stock, total: p.total, variants: p.variants, real: true,
+    };
+  });
+}
+
+/* showcase overlay: nicer name, description, collections and the illustration of each picked model.
+   Picked models also go to the top of "popular" (rank 0..n in the curated order). */
+const COLLECTIONS = (FEED && SHOWCASE) ? SHOWCASE.collections.map(c => ({ ...c })) : [];
+if (FEED && SHOWCASE) {
+  const order = SHOWCASE.order || [];
+  PRODUCTS.forEach(p => {
+    const o = SHOWCASE.overlay[p.id];
+    if (!o) return;
+    Object.assign(p, { name: o.name, description: o.description || p.description, cols: o.collections || [],
+      img: o.img || p.img, imgKind: o.img_kind || null, imgNote: o.img_note || null,
+      featured: true, hit: true, rank: order.indexOf(p.id) - 1000 });
+  });
+  /* ids of models that sold out since the showcase was built simply drop out */
+  COLLECTIONS.forEach(c => { c.ids = c.ids.filter(id => PRODUCTS.some(p => p.id === id)); });
+}
+
+/* the cart line for a product + size: real products carry the Torgsoft code of that size and its price */
+function cartLine(p, size) {
+  if (!p.variants) return { p, size };
+  const v = size ? p.variants.find(x => x.size === size) : (p.variants.length === 1 ? p.variants[0] : null);
+  if (!v) return { p, size };
+  return { p: { ...p, id: v.id, modelId: p.id, art: p.art, price: v.price, priceMax: v.price, total: v.total, stock: v.stock }, size: v.size };
+}
+const needsSize = (p) => !!(p.variants && p.variants.length > 1);
 
 const AGE_BUCKETS = { '0–2':[0,2], '3–5':[3,5], '6–9':[6,9], '10–12':[10,12] };
 const SEASON_MAP  = { 'Літо':'summer', 'Зима':'winter', 'Демісезон':'demi' };
@@ -79,30 +177,48 @@ const GENDER_MAP  = { 'Дівчатам':'g', 'Хлопцям':'b', 'Унісе�
 
 /* cm height range — only clothing-style products carry one, so a size filter excludes toys */
 const heightRange = (p) => {
+  if (p.real) return p.height;
   if (['clothing','seasonal','baby'].indexOf(p.cat) < 0) return null;
   const m = /^(\d{2,3})–(\d{2,3})$/.exec(p.ages || '');
   return m ? [ +m[1], +m[2] ] : null;
 };
-const hasLast = (p) => p.badge === 'last' || Object.keys(p.av).some(k => p.av[k] === 'last');
+/* real goods: every size in stock is the single last unit; demo: the static labels */
+const hasLast = (p) => p.real ? p.variants.every(v => v.total <= 1)
+  : p.badge === 'last' || Object.keys(p.av).some(k => p.av[k] === 'last');
 
 /* single source of truth for filtering — shared by mobile + desktop */
 function applyFilters(list, f) {
   if (!f) return list;
+  const fcat = CAT_ALIAS[f.cat] || f.cat;
   return list.filter(p => {
-    if (f.cat === 'sale') { if (!p.oldPrice) return false; }
-    else if (f.cat && p.cat !== f.cat) return false;
+    if (fcat === 'sale') { if (!p.oldPrice) return false; }
+    else if (fcat && p.cat !== fcat) return false;
+    if (f.sub && p.sub !== f.sub) return false;
+    if (f.col && !(p.cols || []).includes(f.col)) return false;
     if (f.filter === 'new' && p.badge !== 'new') return false;
-    if (f.age)  { const b = AGE_BUCKETS[f.age]; if (!b || p.age[1] < b[0] || p.age[0] > b[1]) return false; }
-    if (f.size) { const r = heightRange(p), s = +f.size; if (!r || s < r[0] || s > r[1]) return false; }
-    if (f.gender) { const g = GENDER_MAP[f.gender];
-      if (g === 'u' ? p.g !== 'u' : (p.g !== g && p.g !== 'u')) return false; }
-    if (f.season) { const s = SEASON_MAP[f.season]; if (p.season !== 'all' && p.season !== s) return false; }
+    /* real goods: age/height only where the size says so; unknown never matches an age or size filter */
+    if (f.age)  { const b = AGE_BUCKETS[f.age]; if (!b || !p.age || p.age[1] < b[0] || p.age[0] > b[1]) return false; }
+    if (f.size) { const r = heightRange(p), s = +f.size; if (!r || s < r[0] || s > r[1]) return false;
+      if (p.variants && !p.variants.some(v => v.height && s >= v.height[0] && s <= v.height[1])) return false; }
+    if (f.gender) { const g = GENDER_MAP[f.gender];   /* null = not stated in the name: shown for girls and boys */
+      if (g === 'u' ? p.g !== 'u' : (p.g && p.g !== g && p.g !== 'u')) return false; }
+    /* real goods: only a season stated in the name or the shoe subgroup counts */
+    if (f.season) { const s = SEASON_MAP[f.season]; if (p.real ? p.season !== s : (p.season !== 'all' && p.season !== s)) return false; }
     if (f.store && (p.av[f.store] || 'out') === 'out') return false;
     if (f.sale && !p.oldPrice) return false;
     if (f.new  && p.badge !== 'new') return false;
     if (f.last && !hasLast(p)) return false;
     return true;
   });
+}
+
+/* search: every word must be found in the name, article or code; apostrophes and і/ї/й-like typing are normalised */
+const norm = (t) => String(t || '').toLowerCase().replace(/[’'`ʼ]/g, '').replace(/ё/g, 'е');
+function search(q, limit = 40) {
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return PRODUCTS.filter(p => { const hay = norm(p.name + ' ' + (p.art || '') + ' ' + p.id + ' ' + (p.brand || '') + ' ' + (p.subgroup || ''));
+    return words.every(w => hay.includes(w)); }).sort((a, b) => a.rank - b.rank).slice(0, limit);
 }
 
 /* removable labels for the filters that aren't already shown in the page title */
@@ -162,16 +278,28 @@ const AV_LABEL = {
   out:  { uk: 'Немає',           tone: 'gray' },
 };
 
+if (SOURCE.kind !== 'demo') AV_LABEL.last = { uk: 'Остання штука', tone: 'yellow' };
+
+const BY_ID = new Map(PRODUCTS.map(p => [p.id, p]));
+const colById = (id) => COLLECTIONS.find(c => c.id === id) || null;
+const inCollection = (id) => { const c = colById(id); return c ? c.ids.map(x => BY_ID.get(x)).filter(Boolean) : []; };
+/* stock the shop can promise for one product line: the chosen size's units in all shops (null = unknown/demo) */
+const maxQty = (p) => (p && p.real && typeof p.total === 'number') ? Math.max(1, p.total) : 99;
+const catById = (id) => CATS.find(c => c.id === (CAT_ALIAS[id] || id));
+const subById = (id) => { for (const c of CATS) { const s = (c.subs || []).find(x => x.id === id); if (s) return { ...s, parent: c }; } return null; };
+const byRank = (a, b) => a.rank - b.rank;
+
 window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
-  ORDER_ENDPOINT,
-  AGE_BUCKETS, applyFilters, filterChips, heightRange,
+  ORDER_ENDPOINT, SOURCE, HOURS_TBD, COLLECTIONS, colById, inCollection, maxQty, search,
+  AGE_BUCKETS, applyFilters, filterChips, heightRange, cartLine, needsSize,
   REVIEWS, REVIEWS_ARE_DEMO, reviewsFor, shopReviews, ratingOf,
-  catById: (id) => CATS.find(c => c.id === id),
-  byId: (id) => PRODUCTS.find(p => p.id === id),
-  inCat: (id) => PRODUCTS.filter(p => p.cat === id),
+  catById, subById,
+  byId: (id) => BY_ID.get(id),
+  inCat: (id) => PRODUCTS.filter(p => p.cat === (CAT_ALIAS[id] || id)),
+  inSub: (id) => PRODUCTS.filter(p => p.sub === id),
   onSale: () => PRODUCTS.filter(p => p.oldPrice),
-  isNew: () => PRODUCTS.filter(p => p.badge === 'new'),
-  popular: () => PRODUCTS.filter(p => p.hit),
+  isNew: () => PRODUCTS.filter(p => p.badge === 'new').sort(byRank).slice(0, 24),
+  popular: () => PRODUCTS.filter(p => p.hit).sort(byRank).slice(0, 24),
 };
 
 })();
