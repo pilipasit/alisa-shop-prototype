@@ -36,8 +36,7 @@ function useDialog(onClose) {
 window.AlisaDialog = { useDialog };
 
 function App() {
-  const [stack, setStack] = React.useState([{ r:'home', p:{} }]);
-  const cur = stack[stack.length-1];
+  const { stack, cur, nav, tabNav, back } = Ud.useRouter();   /* screen stack ⇄ #/address (ui.jsx) */
   const [cart, setCart] = React.useState(loadCart);
   React.useEffect(()=>{ saveCart(cart); }, [cart]);
   const [overlay, setOverlay] = React.useState(null); // 'filters'|'dm'|'search'|'menu'
@@ -47,9 +46,6 @@ function App() {
   React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   React.useEffect(()=>{ if(scrollRef.current) scrollRef.current.scrollTop = 0; }, [stack.length, cur.r, cur.p.id]);
 
-  const nav = (r, p={}) => setStack(s => [...s, { r, p }]);
-  const back = () => setStack(s => s.length>1 ? s.slice(0,-1) : s);
-  const tabNav = (r) => setStack([{ r, p:{} }]);
 
   const cartCount = cart.reduce((s,i)=>s+i.qty,0);
   const addToCart = (p0, size0=null, qty=1) => {
@@ -136,7 +132,7 @@ function App() {
       {overlay==='filters' && <FiltersDrawer onClose={()=>setOverlay(null)} initial={cur.r==='catalog'?cur.p:null} nav={(r,p)=>{setOverlay(null);nav(r,p);}} />}
       {overlay==='dm' && <DMSheet onClose={()=>setOverlay(null)} />}
       {overlay==='search' && <SearchOverlay onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);nav(r,p);}} addToCart={addToCart} />}
-      {overlay==='menu' && <MenuDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);setStack([{ r, p: p || {} }]);}} />}
+      {overlay==='menu' && <MenuDrawer onClose={()=>setOverlay(null)} nav={(r,p)=>{setOverlay(null);tabNav(r, p || {});}} />}
     </div>
   );
 }
@@ -215,7 +211,7 @@ function SearchOverlay({ onClose, nav, addToCart }) {
       <div style={{ display:'flex', gap:10, alignItems:'center', padding:'14px 16px', borderBottom:'1px solid var(--ink-100)' }}>
         <div style={{ flex:1, position:'relative' }}>
           <i data-lucide="search" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', width:18, height:18, color:'var(--ink-400)' }}></i>
-          <input autoFocus type="search" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px 12px 42px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:15, outline:'none' }} />
+          <input autoFocus type="search" name="q" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px 12px 42px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:15, outline:'none' }} />
         </div>
         <button type="button" onClick={onClose} style={{ background:'none', border:0, fontWeight:700, fontSize:15, color:'var(--pink-600)', cursor:'pointer' }}>Скасувати</button>
       </div>

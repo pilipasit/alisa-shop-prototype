@@ -28,7 +28,7 @@ function CartScreen({ nav, cart, setQty, removeItem }) {
             <div style={{ width:84, flex:'none' }}><Ph cat={S2.catById(it.p.cat)} src={it.p.img} alt={it.p.name} kind={it.p.imgKind} /></div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:800, fontSize:14.5, color:'var(--ink-900)', lineHeight:1.2 }}>{it.p.name}</div>
-              <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:700, margin:'2px 0 8px' }}>{it.p.real ? 'Код' : 'Арт.'} {it.p.id}{it.size?` · розмір ${it.size}`:''}</div>
+              <div style={{ fontSize:12, color:'var(--ink-500)', fontWeight:700, margin:'2px 0 8px' }}>{it.p.real ? 'Код' : 'Арт.'} {it.p.id}{it.size?` · ${it.p.height ? 'зріст' : 'розмір'} ${S2.sizeText(it.p, it.size)}`:''}</div>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                 <Pr2 p={it.p} size={20} />
                 <Ib2 aria-label="Прибрати" variant="ghost" size="sm" onClick={()=>removeItem(idx)}>{Ic('trash-2')}</Ib2>
@@ -185,7 +185,7 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
         {steps.map((s,i)=>(
           <React.Fragment key={i}>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
-              <div style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:14, background: i<=step?'var(--pink-500)':'#fff', color:i<=step?'#fff':'var(--ink-500)', border:'2px solid '+(i<=step?'var(--pink-500)':'var(--ink-200)') }}>{i<step?'✓':i+1}</div>
+              <div style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:14, background: i<=step?'var(--pink-500)':'#fff', color:i<=step?'#fff':'var(--ink-500)', border:'2px solid '+(i<=step?'var(--pink-500)':'var(--ink-200)') }}>{i<step?<i data-lucide="check" aria-hidden="true" style={{width:16,height:16}}></i>:i+1}</div>
               <span style={{ fontSize:11, fontWeight:700, color:i<=step?'var(--ink-900)':'var(--ink-500)' }}>{s}</span>
             </div>
             {i<steps.length-1 && <div style={{ flex:1, height:2, background:i<step?'var(--pink-500)':'var(--ink-200)', margin:'0 6px', marginBottom:18 }}></div>}
@@ -255,7 +255,7 @@ function CheckoutScreen({ nav, cart, placeOrder }) {
             <div style={{ fontWeight:800, fontSize:15, color:'var(--ink-900)', marginBottom:10 }}>Ваше замовлення</div>
             {cart.map((it,i)=>(
               <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:13.5, padding:'5px 0', color:'var(--ink-700)' }}>
-                <span style={{fontWeight:600}}>{it.p.name} {it.size?`(${it.size})`:''} × {it.qty}</span>
+                <span style={{fontWeight:600}}>{it.p.name} {it.size?`(${S2.sizeText(it.p, it.size)})`:''} × {it.qty}</span>
                 <span style={{fontWeight:800, color:'var(--ink-900)', whiteSpace:'nowrap'}}>{it.p.price*it.qty} ₴</span>
               </div>
             ))}

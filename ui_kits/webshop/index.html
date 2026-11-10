@@ -1,10 +1,8 @@
 <!-- @dsCard group="Webshop" viewport="430x720" name="Web shop — mobile prototype" subtitle="Clickable MVP: home → catalog → product → cart → checkout" -->
 <!DOCTYPE html>
-<html lang="uk"><head><meta charset="utf8"><!-- Supply-chain hardening. 'unsafe-eval' is required only because this prototype
-     compiles JSX in the browser with Babel; the production build removes both
-     'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
-     via <meta> — they need real response headers (see SECURITY.md). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'">
+<html lang="uk"><head><meta charset="utf8"><!-- CSP: scripts only from this site (production build, no Babel/CDN). frame-ancestors and HSTS cannot be
+     set via <meta> — they need real response headers (_headers on Cloudflare, see SECURITY.md). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — дитячий магазин · одяг, взуття, іграшки</title>
 <meta name="description" content="Інтернет-магазин дитячого одягу, взуття та іграшок «Аліса». Кам'янське та Дніпро — 3 магазини. Резерв онлайн і безкоштовний самовивіз з магазину.">
@@ -44,7 +42,11 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="../../styles.css">
+<!-- fonts with full Cyrillic (tokens/fonts.css), fetched in parallel; design tokens from the build (one file instead of 6 @imports) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&amp;family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap">
+<link rel="stylesheet" href="build/shop.css">
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:var(--font-body);background:#e9e4e7;color:var(--ink-900);
@@ -105,28 +107,14 @@
   <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#df0380"/><rect x="34" y="22" width="32" height="56" rx="7" fill="#fff"/><circle cx="50" cy="70" r="3" fill="#df0380"/></svg>
 </template>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- Production build (tools/build.mjs, `npm run build`): React vendored, JSX precompiled, only the used icons.
+     No Babel and no CDN at runtime, so the CSP is script-src 'self'. Edit the .jsx files, then rebuild. -->
+<script src="build/vendor/react.production.min.js"></script>
+<script src="build/vendor/react-dom.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
-<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
-<!-- Real catalog from Torgsoft (automation/shop_feed.py in alisa-shop-docs, see SHOP-FEED.md). The feed files
-     are git-ignored and loaded ONLY on localhost, so the public site never requests them and shows the demo data.
-     Order: feed.local.js (full), sample.js (30 products), else demo. -->
+<script src="build/icons.js"></script>
 <!-- Curated showcase: 36 real models, public-safe (showcase/build_showcase.py, SITE-REVIEW.md). Loaded everywhere. -->
 <script src="showcase/showcase.js"></script>
-<script>
-(function(){
-  var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-  if (local) document.write('<script src="feed/sample.js"><\/script><script src="feed/feed.local.js"><\/script>');
-  else document.querySelectorAll('[data-local-only]').forEach(function(e){ e.remove(); });
-})();
-</script>
-<script type="text/babel" data-presets="react" src="data.jsx"></script>
-<script type="text/babel" data-presets="react" src="ui.jsx"></script>
-<script type="text/babel" data-presets="react" src="screens1.jsx"></script>
-<script type="text/babel" data-presets="react" src="screens2.jsx"></script>
-<script type="text/babel" data-presets="react" src="legal.jsx"></script>
-<script type="text/babel" data-presets="react" src="app.jsx"></script>
-<script>setTimeout(()=>window.lucide&&window.lucide.createIcons(),400);</script>
+<script src="boot.js"></script>
+<script src="build/shop-mobile.js"></script>
 </body></html>

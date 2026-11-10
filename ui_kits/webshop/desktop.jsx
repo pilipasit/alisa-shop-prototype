@@ -65,7 +65,7 @@ function Header({ nav, tabNav, cartCount, openSearch }) {
         <Clickable onClick={()=>tabNav('home')} label="Аліса — на головну"><img src="../../assets/logo-primary.svg" alt="" style={{ height:40, display:'block' }} /></Clickable>
         <div style={{ flex:1, position:'relative', maxWidth:520 }}>
           <i data-lucide="search" style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:19, height:19, color:'var(--ink-400)' }}></i>
-          <input readOnly aria-label="Пошук товарів" placeholder="Пошук товарів — наприклад, «комбінезон»" onClick={openSearch}
+          <input readOnly name="q-open" aria-label="Пошук товарів" placeholder="Пошук товарів — наприклад, «комбінезон»" onClick={openSearch}
             onKeyDown={e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSearch(); } }} style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', fontFamily:'var(--font-body)', fontWeight:600, fontSize:15, outline:'none', cursor:'pointer', background:'#fff' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
@@ -94,7 +94,7 @@ function ShowcaseHero({ nav }) {
       <div style={{ flex:1, position:'relative' }}>
         <div style={{ fontWeight:800, fontSize:12, textTransform:'uppercase', letterSpacing:'.05em' }}>{c.id==='gifts' ? Scr.giftKicker() : 'Садочок і школа'}</div>
         <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, lineHeight:1.05, margin:'4px 0 6px' }}>{c.title}</div>
-        <div style={{ fontWeight:700, fontSize:14 }}>Дивитися {c.ids.length} {Scr.plural(c.ids.length,'товар','товари','товарів')} →</div>
+        <div style={{ fontWeight:700, fontSize:14 }}>Дивитися {c.ids.length} {Scr.plural(c.ids.length,'товар','товари','товарів')} <i data-lucide="arrow-right" aria-hidden="true" style={{width:'1em',height:'1em',verticalAlign:'-0.15em'}}></i></div>
       </div>
       {p && <div style={{ width:118, flex:'none', borderRadius:'var(--radius-lg)', overflow:'hidden', background:'#fff' }}><Photo src={p.img} alt="" kind={p.imgKind} /></div>}
     </Clickable>
@@ -119,7 +119,7 @@ function ShowcaseHero({ nav }) {
         </div>
       </div>
       <div style={{ display:'grid', gridTemplateRows:'1fr 1fr', gap:24 }}>
-        {gifts && side(gifts, 'green', 'm101396')}
+        {gifts && side(gifts, 'green', 'm142089')}
         {ranok && side(ranok, 'blue', 'm141734')}
       </div>
     </div>
@@ -146,13 +146,13 @@ function Hero({ nav, tabNav }) {
           <div style={{ position:'absolute', width:160, height:160, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
           <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:28 }}>Нова колекція</div>
           <div style={{ position:'relative', fontWeight:600, fontSize:15, margin:'2px 0 14px' }}>Весна 2026 вже у продажу</div>
-          <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{filter:'new'})} style={{background:'#fff'}}>Дивитися →</Button></div>
+          <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{filter:'new'})} style={{background:'#fff'}}>Дивитися <i data-lucide="arrow-right" aria-hidden="true" style={{width:'1em',height:'1em',verticalAlign:'-0.15em'}}></i></Button></div>
         </div>
         <div style={{ position:'relative', overflow:'hidden', background:'var(--green-600)', color:'#fff', borderRadius:'var(--radius-xl)', padding:'30px 32px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
           <div style={{ position:'absolute', width:160, height:160, borderRadius:'var(--radius-blob)', background:'rgba(255,255,255,.16)', right:-40, bottom:-50 }}></div>
           <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:28 }}>Іграшка тижня</div>
           <div style={{ position:'relative', fontWeight:600, fontSize:15, margin:'2px 0 14px' }}>−30% на конструктори</div>
-          <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{cat:'toys'})} style={{background:'#fff'}}>Дивитися →</Button></div>
+          <div style={{ position:'relative' }}><Button variant="secondary" onClick={()=>nav('catalog',{cat:'toys'})} style={{background:'#fff'}}>Дивитися <i data-lucide="arrow-right" aria-hidden="true" style={{width:'1em',height:'1em',verticalAlign:'-0.15em'}}></i></Button></div>
         </div>
       </div>
     </div>
@@ -164,7 +164,7 @@ function Section({ title, link, onLink, children }) {
     <div style={{ marginBottom:40 }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
         <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:30, margin:0, color:'var(--ink-900)' }}>{title}</h2>
-        {link && <Clickable onClick={onLink} style={{ fontWeight:700, fontSize:15, color:'var(--pink-600)', textDecoration:'underline' }}>{link} →</Clickable>}
+        {link && <Clickable onClick={onLink} style={{ fontWeight:700, fontSize:15, color:'var(--pink-600)', textDecoration:'underline' }}>{link} <i data-lucide="arrow-right" aria-hidden="true" style={{width:'1em',height:'1em',verticalAlign:'-0.15em'}}></i></Clickable>}
       </div>
       {children}
     </div>
@@ -295,7 +295,7 @@ function Footer({ nav, tabNav, openDM }) {
         </div>
         <div style={{ borderTop:'1px solid var(--ink-100)', marginTop:28, paddingTop:18, display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-500)', fontWeight:600 }}>
           <span>© 2026 Магазин «Аліса». Усі права захищені.</span>
-          <span>Зроблено з ♥ для родин</span>
+          <span>Зроблено з <i data-lucide="heart" aria-label="любов’ю" style={{width:14,height:14,verticalAlign:'-0.15em',color:'var(--pink-500)'}}></i> для родин</span>
         </div>
       </div>
     </footer>
@@ -363,7 +363,7 @@ function SearchOverlay({ onClose, nav, addToCart }) {
       <div style={{ maxWidth:900, width:'100%', margin:'0 auto', display:'flex', gap:10, alignItems:'center', padding:'16px 24px', borderBottom:'1px solid var(--ink-100)' }}>
         <div style={{ flex:1, position:'relative' }}>
           <i data-lucide="search" style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:19, height:19, color:'var(--ink-400)' }}></i>
-          <input autoFocus type="search" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:16, outline:'none' }} />
+          <input autoFocus type="search" name="q" aria-label="Пошук товарів" value={q} onChange={e=>setQ(e.target.value)} placeholder="Пошук товарів…" style={{ width:'100%', boxSizing:'border-box', padding:'13px 16px 13px 46px', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', fontFamily:'var(--font-body)', fontWeight:700, fontSize:16, outline:'none' }} />
         </div>
         <button onClick={onClose} style={{ background:'none', border:0, fontWeight:700, fontSize:15, color:'var(--pink-600)', cursor:'pointer' }}>Скасувати</button>
       </div>
@@ -408,8 +408,7 @@ function DMSheet({ onClose }) {
 
 /* ---------------- APP SHELL + ROUTER ---------------- */
 function DesktopApp() {
-  const [stack, setStack] = React.useState([{ r:'home', p:{} }]);
-  const cur = stack[stack.length-1];
+  const { stack, cur, nav, tabNav } = U.useRouter();   /* screen stack ⇄ #/address (ui.jsx) */
   const [cart, setCart] = React.useState(loadCart);
   React.useEffect(()=>{ saveCart(cart); }, [cart]);
   const [overlay, setOverlay] = React.useState(null);
@@ -418,8 +417,6 @@ function DesktopApp() {
   React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   React.useEffect(()=>{ window.scrollTo && window.scrollTo(0,0); }, [stack.length, cur.r, cur.p.id]);
 
-  const nav = (r, p={}) => setStack(s => [...s, { r, p }]);
-  const tabNav = (r, p={}) => setStack([{ r, p }]);
 
   const cartCount = cart.reduce((s,i)=>s+i.qty,0);
   const addToCart = (p0, size0=null, qty=1) => {

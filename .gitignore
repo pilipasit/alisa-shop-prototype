@@ -3,3 +3,5 @@
 ui_kits/webshop/feed/feed.local.js
 ui_kits/webshop/feed/sample.js
 *.tmp
+
+node_modules/

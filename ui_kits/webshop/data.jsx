@@ -130,17 +130,31 @@ if (FEED) {
 
   const avOf = (n) => n <= 0 ? 'out' : n === 1 ? 'last' : 'in';
   const sizeLabel = (sz) => !sz.length ? 'one' : sz.length === 1 ? sz[0] : sz[0] + ' … ' + sz[sz.length-1];
+  /* what the card says about sizes: clothes by height («зріст 98–116 см» instead of Torgsoft's «28(98) … 34(116)»),
+     everything else as Torgsoft has it */
+  const sizeNoteOf = (p, bodySize) => {
+    const sz = p.sizes || [];
+    if (!sz.length || (sz.length === 1 && /^one ?size$/i.test(sz[0]))) return 'один розмір';
+    if (bodySize && p.height && p.variants.every(v => v.height)) {
+      const [a, b] = p.height; return 'зріст ' + (a === b ? a : a + '–' + b) + ' см';
+    }
+    if (p.group === 'Аксесуари' && /шапк|панам|кепк/i.test(p.subgroup || '')) return 'обхват голови ' + sizeLabel(sz);
+    return 'розм. ' + sizeLabel(sz);
+  };
   PRODUCTS = FEED.products.map(p => {
     const grp = 'g' + (p.category || '99.99').split('.')[0];
+    /* the feed reads height/age out of the size; for hats «50-52» is the head size, not 50–52 cm of height and
+       not age 0 — so only clothes and baby goods keep them (otherwise a hat matches «0–2 р» and «зріст 50»). */
+    const bodySize = p.group === 'Одяг' || p.group === 'Для малюків';
     const av = {}; STORES.forEach(s => { av[s.id] = avOf((p.stock || {})[s.id] || 0); });
     return {
       id: p.id, art: p.articul || p.variants[0].id, name: p.name, nameTorgsoft: p.name_torgsoft,
       cat: grp, sub: p.category, group: p.group, subgroup: p.subgroup, catStatus: p.category_status,
       price: p.price, priceMax: p.price_max, oldPrice: null,
-      ages: sizeLabel(p.sizes || []), sizes: p.sizes || [],
+      ages: sizeLabel(p.sizes || []), sizes: p.sizes || [], sizeNote: sizeNoteOf(p, bodySize),
       badge: p.new ? 'new' : null, av, hit: !!p.popularity && p.popularity <= 24, rank: p.popularity || 1e9,
       img: (p.images && p.images[0]) || null, description: p.description,
-      age: p.age || null, height: p.height || null, g: p.gender || null, season: p.season || null,
+      age: bodySize ? (p.age || null) : null, height: bodySize ? (p.height || null) : null, g: p.gender || null, season: p.season || null,
       brand: p.brand, color: p.color, stock: p.stock, total: p.total, variants: p.variants, real: true,
     };
   });
@@ -154,8 +168,9 @@ if (FEED && SHOWCASE) {
   PRODUCTS.forEach(p => {
     const o = SHOWCASE.overlay[p.id];
     if (!o) return;
-    Object.assign(p, { name: o.name, description: o.description || p.description, cols: o.collections || [],
-      img: o.img || p.img, imgKind: o.img_kind || null, imgNote: o.img_note || null,
+    Object.assign(p, { img: o.img || p.img, imgKind: o.img_kind || null, imgNote: o.img_note || null });
+    if (!(o.collections || []).length) return;   /* a real photo for a model outside the showcase: picture only */
+    Object.assign(p, { name: o.name || p.name, description: o.description || p.description, cols: o.collections,
       featured: true, hit: true, rank: order.indexOf(p.id) - 1000 });
   });
   /* ids of models that sold out since the showcase was built simply drop out */
@@ -170,6 +185,13 @@ function cartLine(p, size) {
   return { p: { ...p, id: v.id, modelId: p.id, art: p.art, price: v.price, priceMax: v.price, total: v.total, stock: v.stock }, size: v.size };
 }
 const needsSize = (p) => !!(p.variants && p.variants.length > 1);
+/* the label of one size button / cart line: clothes by height in cm, the rest as in Torgsoft */
+function sizeText(p, size) {
+  if (!p || !p.variants || !p.height) return size;
+  const v = p.variants.find(x => x.size === size);
+  if (!v || !v.height) return size;
+  return v.height[0] === v.height[1] ? String(v.height[0]) : v.height[0] + '–' + v.height[1];
+}
 
 const AGE_BUCKETS = { '0–2':[0,2], '3–5':[3,5], '6–9':[6,9], '10–12':[10,12] };
 const SEASON_MAP  = { 'Літо':'summer', 'Зима':'winter', 'Демісезон':'demi' };
@@ -291,7 +313,7 @@ const byRank = (a, b) => a.rank - b.rank;
 
 window.AlisaShop = { CATS, STORES, PRODUCTS, BUCKETS, SIZES_CLOTHING, SIZES_SHOES, AV_LABEL, PHONE,
   ORDER_ENDPOINT, SOURCE, HOURS_TBD, COLLECTIONS, colById, inCollection, maxQty, search,
-  AGE_BUCKETS, applyFilters, filterChips, heightRange, cartLine, needsSize,
+  AGE_BUCKETS, applyFilters, filterChips, heightRange, cartLine, needsSize, sizeText,
   REVIEWS, REVIEWS_ARE_DEMO, reviewsFor, shopReviews, ratingOf,
   catById, subById,
   byId: (id) => BY_ID.get(id),

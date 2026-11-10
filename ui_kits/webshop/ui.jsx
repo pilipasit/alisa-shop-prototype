@@ -56,12 +56,16 @@ function Clickable({ children, style, label, title, ...rest }) {
 function Photo({ cat, icon, ratio = '1 / 1', radius = 'var(--radius-md)', big = false, src, alt, kind }) {
   const col = cat ? cat.color : 'pink';
   const ic = icon || (cat ? cat.icon : 'image');
-  const [failed, setFailed] = React.useState(false);
-  if (src && !failed) {
+  const [failed, setFailed] = React.useState(0);   /* 0 ok · 1 the small copy is missing → plain src · 2 no image */
+  /* showcase pictures come in two sizes: <id>-360.webp for cards, <id>.webp (640) for the product page */
+  const m = src && failed === 0 ? /^(.*\/assets\/showcase\/[^/]+)\.webp$/.exec(src) : null;
+  const srcSet = m ? `${m[1]}-360.webp 360w, ${src} 640w` : undefined;
+  const sizes = m ? (big ? '(max-width: 460px) 100vw, 640px' : '(max-width: 460px) 45vw, 240px') : undefined;
+  if (src && failed < 2) {
     return (
       <div style={{ aspectRatio: ratio, width: '100%', background: '#fff', borderRadius: radius, overflow: 'hidden', position: 'relative' }}>
-        <img src={src} alt={(kind === 'illustration' ? 'Ілюстрація: ' : '') + (alt || (cat ? cat.uk : 'Товар'))} loading="lazy" decoding="async"
-          width="640" height="640" onError={() => setFailed(true)}
+        <img src={src} srcSet={srcSet} sizes={sizes} alt={(kind === 'illustration' ? 'Ілюстрація: ' : '') + (alt || (cat ? cat.uk : 'Товар'))} loading="lazy" decoding="async"
+          width="640" height="640" onError={() => setFailed(f => (srcSet && f === 0) ? 1 : 2)}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         {/* generated pictures must never pass for product photos */}
         {kind === 'illustration' && <span aria-hidden="true" style={{ position: 'absolute', left: 8, bottom: 8, background: 'rgba(255,255,255,.92)',
@@ -113,7 +117,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
   const b = p.badge && PBADGE[p.badge];
   const anyIn = Object.values(p.av).some(s => s==='in');
   const anyLast = !anyIn && Object.values(p.av).some(s => s==='last');
-  const statusLabel = anyIn ? 'В наявності' : anyLast ? 'Останній розмір' : 'Немає в наявності';
+  const statusLabel = anyIn ? 'В наявності' : anyLast ? (p.real ? (window.AlisaShop.needsSize(p) ? 'Останні розміри' : 'Остання штука') : 'Останній розмір') : 'Немає в наявності';
   const statusColor = anyIn ? 'var(--green-600)' : anyLast ? 'var(--ink-700)' : 'var(--ink-500)';
   return (
     <div style={{ background:'#fff', borderRadius:'var(--radius-lg)', border:'1px solid var(--ink-100)', boxShadow:'var(--shadow-sm)',
@@ -127,7 +131,7 @@ function ProductCard({ p, cat, onOpen, onAdd }) {
       </Clickable>
       <div style={{ padding:'4px 12px 14px', display:'flex', flexDirection:'column', flex:1 }}>
         <Clickable onClick={onOpen} style={{ display:'block', width:'100%', fontWeight:800, fontSize:15, color:'var(--ink-900)', lineHeight:1.25, minHeight:38 }}>{p.name}</Clickable>
-        <div style={{ fontSize:11.5, color:'var(--ink-500)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.art||p.id} · {p.ages!=='one'&&p.ages!=='0+'?'розм. ':''}{p.ages==='one'?'один розмір':p.ages}</div>
+        <div style={{ fontSize:11.5, color:'var(--ink-500)', fontWeight:700, margin:'4px 0 8px' }}>Арт. {p.art||p.id} · {p.sizeNote || ((p.ages!=='one'&&p.ages!=='0+'?'розм. ':'') + (p.ages==='one'?'один розмір':p.ages))}</div>
         <Price p={p} size={24} />
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:6, flexWrap:'wrap', margin:'10px 0 12px' }}>
           <span style={{ fontSize:12, fontWeight:800, color:statusColor }}>{statusLabel}</span>
@@ -231,7 +235,7 @@ function SectionHead({ title, action, onAction }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', margin:'0 0 12px' }}>
       <h2 style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:21, margin:0, color:'var(--ink-900)' }}>{title}</h2>
-      {action && <Clickable onClick={onAction} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', whiteSpace:'nowrap' }}>{action} →</Clickable>}
+      {action && <Clickable onClick={onAction} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', whiteSpace:'nowrap' }}>{action} <i data-lucide="arrow-right" aria-hidden="true" style={{width:'1em',height:'1em',verticalAlign:'-0.15em'}}></i></Clickable>}
     </div>
   );
 }
@@ -326,6 +330,66 @@ function StoreCard({ s, av, onReserve }) {
   );
 }
 
-window.AlisaUI = { Icon, SR, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
+
+/* ---- addresses for pages: #/product/m140674, #/catalog?col=winter … ----
+   Shareable links to a product or a collection, and the browser / Android «back» button works inside the shop.
+   (Hash URLs: still one HTML file, works on GitHub Pages as is. Search engines need real URLs — production step.) */
+const ROUTES = ['home','catalog','product','cart','checkout','confirm','stores','sale','linkbio','sizeguide','info'];
+const FLAGS = ['sale','new','last'];
+function toHash(e) {
+  if (!e || e.r === 'home') return '#/';
+  const p = e.p || {};
+  const q = Object.keys(p).filter(k => k !== 'id' && p[k] !== undefined && p[k] !== null && p[k] !== '' && p[k] !== false && typeof p[k] !== 'object')
+    .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(p[k] === true ? 1 : p[k])).join('&');
+  return '#/' + e.r + (p.id ? '/' + encodeURIComponent(p.id) : '') + (q ? '?' + q : '');
+}
+function fromHash(h) {
+  const m = /^#\/([a-z]+)?(?:\/([^?]+))?(?:\?(.*))?$/.exec(h || '');
+  if (!m || !m[1] || ROUTES.indexOf(m[1]) < 0) return { r:'home', p:{} };
+  if (m[1] === 'confirm') return { r:'home', p:{} };      /* a confirmation is not a page to come back to */
+  if (m[1] === 'checkout') return { r:'cart', p:{} };
+  const p = {};
+  if (m[2]) p.id = decodeURIComponent(m[2]);
+  (m[3] || '').split('&').filter(Boolean).forEach(kv => { const i = kv.indexOf('='); const k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
+    const v = decodeURIComponent(i < 0 ? '' : kv.slice(i + 1)); p[k] = FLAGS.indexOf(k) >= 0 ? true : v; });
+  if (m[1] === 'product' && !window.AlisaShop.byId(p.id)) return { r:'catalog', p:{} };   /* sold out since the link was shared */
+  return { r: m[1], p };
+}
+const BASE_TITLE = document.title;
+function titleFor(e) {
+  const S = window.AlisaShop;
+  if (e.r === 'product') { const p = S.byId(e.p.id); return p ? p.name + ' — Аліса' : BASE_TITLE; }
+  if (e.r === 'catalog') { const c = e.p.col ? S.colById(e.p.col) : e.p.cat ? S.catById(e.p.cat) : null;
+    return (c ? (c.title || c.uk) : 'Каталог') + ' — Аліса'; }
+  const T = { cart:'Кошик', checkout:'Резерв', stores:'Магазини', sale:'Розпродаж', linkbio:'Контакти', sizeguide:'Таблиця розмірів', info:'Інформація' };
+  return T[e.r] ? T[e.r] + ' — Аліса' : BASE_TITLE;
+}
+/* the screen stack of the app, kept in sync with the address bar */
+function useRouter() {
+  const [stack, setStack] = React.useState(() => { const f = fromHash(location.hash); return f.r === 'home' ? [f] : [{ r:'home', p:{} }, f]; });
+  const cur = stack[stack.length - 1];
+  React.useEffect(() => {
+    try { history.replaceState({ d: 0 }, '', location.pathname + location.search + toHash(cur)); } catch (_) {}
+    const onPop = () => { const f = fromHash(location.hash);
+      setStack(s => { const prev = s[s.length - 2];
+        if (prev && toHash(prev) === toHash(f)) return s.slice(0, -1);
+        if (toHash(s[s.length - 1]) === toHash(f)) return s;
+        return f.r === 'home' ? [f] : [{ r:'home', p:{} }, f]; }); };   /* jumped elsewhere in history: show that page */
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  React.useEffect(() => { document.title = titleFor(cur); }, [cur]);
+  const push = (e, depth) => { try { history.pushState({ d: depth }, '', toHash(e)); } catch (_) {} };
+  const nav = (r, p = {}) => { const e = { r, p: p || {} }; push(e, stack.length); setStack(s => s.concat([e])); };
+  const tabNav = (r, p = {}) => { const e = { r, p: p || {} }; push(e, 1); setStack([e]); };
+  const back = () => {
+    if (stack.length < 2) return;
+    if (history.state && history.state.d > 0) history.back();
+    else { const prev = stack[stack.length - 2]; try { history.replaceState({ d: 0 }, '', toHash(prev)); } catch (_) {} setStack(s => s.slice(0, -1)); }
+  };
+  return { stack, cur, nav, tabNav, back };
+}
+
+window.AlisaUI = { useRouter, toHash, fromHash, Icon, SR, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustBar, Photo, ProductCard, SectionHead, HScroll, PromoBanner, FilterChip, Breadcrumbs, Qty, StoreCard, StoreDots, Price, disc, C500, C100, C600, PBADGE };
 
 })();

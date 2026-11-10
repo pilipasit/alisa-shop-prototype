@@ -8,15 +8,16 @@ const { Icon, Clickable, CSURF, Stars, DemoTag, ReviewCard, ReviewsEmpty, TrustB
 
 /* where the goods come from: demo data or the Torgsoft feed (automation/shop_feed.py) */
 const REAL = S.SOURCE.kind !== 'demo';
+const PHOTO_N = S.PRODUCTS.filter(p => p.imgKind === 'photo').length;
 function SourceNote({ style }) {
   if (!REAL) return null;
   return (
     <div style={{ display:'flex', gap:10, alignItems:'flex-start', background:'var(--yellow-100)', border:'1px solid var(--yellow-500)', borderRadius:'var(--radius-md)', padding:'10px 13px', fontSize:12.5, fontWeight:600, color:'var(--ink-700)', lineHeight:1.45, ...style }}>
       <i data-lucide="database" style={{ width:16, height:16, flex:'none', marginTop:2, color:'var(--ink-700)' }} aria-hidden="true"></i>
       {S.SOURCE.kind==='showcase'
-        ? <div><b style={{ color:'var(--ink-900)' }}>Прототип.</b> {S.SOURCE.total} справжніх товарів із магазинів, наявність на {S.SOURCE.dateOnly}. Картинки — <b>ілюстрації</b>, не фото. Замовлення поки не приймаються.</div>
+        ? <div><b style={{ color:'var(--ink-900)' }}>Прототип.</b> {S.SOURCE.total} справжніх товарів із магазинів, наявність на {S.SOURCE.dateOnly}. {PHOTO_N > 0 ? <>У {PHOTO_N} — офіційні фото постачальника, у решти — <b>ілюстрації</b>, не фото.</> : <>Картинки — <b>ілюстрації</b>, не фото.</>} Замовлення поки не приймаються.</div>
         : <div><b style={{ color:'var(--ink-900)' }}>{S.SOURCE.kind==='sample' ? 'Зразок даних Torgsoft' : 'Дані з Torgsoft'}</b> на {S.SOURCE.asOf} · {S.SOURCE.total} моделей у магазинах.
-        {S.SOURCE.draft && <> Категорії — <b>чернетка</b>, ще не затверджені.</>} Фото є лише у {S.COLLECTIONS.length ? 'товарів вітрини (ілюстрації)' : 'жодного товару'}. Внутрішній прототип, не для публікації.</div>}
+        {S.SOURCE.draft && <> Категорії — <b>чернетка</b>, ще не затверджені.</>} {PHOTO_N > 0 ? `Офіційні фото постачальника — у ${PHOTO_N} товарів, ілюстрації — у товарів вітрини, у решти картинок немає.` : 'Фото поки немає.'} Внутрішній прототип, не для публікації.</div>}
     </div>
   );
 }
@@ -255,7 +256,7 @@ function CatalogScreen({ nav, addToCart, params, openFilters }) {
       <div style={{ display:'flex', gap:10, marginBottom:14 }}>
         <Button variant="secondary" size="sm" icon={Icon('sliders-horizontal')} onClick={openFilters}>Фільтри</Button>
         <div style={{ position:'relative', flex:1 }}>
-          <select aria-label="Сортування" value={sort} onChange={e=>setSort(e.target.value)} style={{ width:'100%', height:'100%', appearance:'none', WebkitAppearance:'none', fontFamily:'var(--font-body)', fontWeight:700, fontSize:13.5, color:'var(--ink-700)', background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', padding:'0 36px 0 16px' }}>
+          <select name="sort" aria-label="Сортування" value={sort} onChange={e=>setSort(e.target.value)} style={{ width:'100%', height:'100%', appearance:'none', WebkitAppearance:'none', fontFamily:'var(--font-body)', fontWeight:700, fontSize:13.5, color:'var(--ink-700)', background:'#fff', border:'2px solid var(--ink-200)', borderRadius:'var(--radius-pill)', padding:'0 36px 0 16px' }}>
             {SORTS.map(s=> <option key={s[0]} value={s[0]}>{s[1]}</option>)}
           </select>
           <i data-lucide="chevron-down" style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', width:16, height:16, color:'var(--ink-400)', pointerEvents:'none' }}></i>
@@ -270,7 +271,7 @@ function CatalogScreen({ nav, addToCart, params, openFilters }) {
               style={{ display:'inline-flex', alignItems:'center', gap:6, fontFamily:'var(--font-body)', fontWeight:700, fontSize:13,
                 padding:'7px 12px', borderRadius:'var(--radius-pill)', cursor:'pointer',
                 border:'2px solid var(--pink-500)', background:'var(--pink-100)', color:'var(--pink-600)' }}>
-              {c.label} <span aria-hidden="true">✕</span>
+              {c.label} <i data-lucide="x" aria-hidden="true" style={{width:14,height:14}}></i>
               <span style={{ position:'absolute', width:1, height:1, overflow:'hidden', clip:'rect(0 0 0 0)' }}>Прибрати фільтр</span>
             </button>
           ))}
@@ -349,6 +350,9 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
             Це ілюстрація, а не фото товару. Як річ виглядає насправді — покажемо в магазині або надішлемо фото у Viber.
           </p>
         )}
+        {p.imgKind === 'photo' && p.imgNote && (
+          <p style={{ fontSize:12, color:'var(--ink-500)', fontWeight:600, margin:'8px 2px 0' }}>{p.imgNote}</p>
+        )}
         {p.real && !p.img && (
           <p style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600, margin:'8px 2px 0' }}>Фото цього товару ще немає — попросіть у Viber, надішлемо.</p>
         )}
@@ -370,11 +374,11 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
       {sizes && (
         <div style={{ margin:'18px 0' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-            <span style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{isShoes||p.real?'Розмір':'Розмір (зріст)'}{p.real && <span style={{ fontWeight:600, color:'var(--ink-500)' }}> · в наявності</span>}</span>
+            <span style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)' }}>{p.real && p.height ? 'Зріст, см' : isShoes||p.real?'Розмір':'Розмір (зріст)'}{p.real && <span style={{ fontWeight:600, color:'var(--ink-500)' }}> · в наявності</span>}</span>
             <Clickable onClick={()=>nav('sizeguide')} style={{ fontWeight:700, fontSize:13, color:'var(--pink-600)', display:'inline-flex', alignItems:'center', gap:4, textDecoration:'underline' }}><i data-lucide="ruler" style={{width:14,height:14}} aria-hidden="true"></i>Таблиця розмірів</Clickable>
           </div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-            {sizes.map(s=> <button key={s} onClick={()=>setSize(s)} aria-pressed={size===s} style={{ minWidth:48, height:44, padding:'0 12px', borderRadius:'var(--radius-md)', cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:800, fontSize:15, border:'2px solid '+(size===s?'var(--pink-500)':'var(--ink-200)'), background:size===s?'var(--pink-100)':'#fff', color:size===s?'var(--pink-600)':'var(--ink-700)' }}>{s}</button>)}
+            {sizes.map(s=> <button key={s} onClick={()=>setSize(s)} aria-pressed={size===s} title={S.sizeText(p,s)!==s ? 'Розмір у магазині: '+s : undefined} style={{ minWidth:48, height:44, padding:'0 12px', borderRadius:'var(--radius-md)', cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:800, fontSize:15, border:'2px solid '+(size===s?'var(--pink-500)':'var(--ink-200)'), background:size===s?'var(--pink-100)':'#fff', color:size===s?'var(--pink-600)':'var(--ink-700)' }}>{S.sizeText(p,s)}</button>)}
           </div>
         </div>
       )}
@@ -394,7 +398,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
       {/* store availability */}
       <div style={{ background:'#fff', border:'1px solid var(--ink-100)', borderRadius:'var(--radius-lg)', padding:16, margin:'18px 0' }}>
         <div style={{ fontWeight:800, fontSize:14, color:'var(--ink-900)', marginBottom:12, display:'flex', alignItems:'center', gap:8 }}><i data-lucide="store" style={{width:18,height:18,color:'var(--pink-500)'}}></i>Наявність у магазинах</div>
-        {p.real && sizes && <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600, margin:'-4px 0 6px' }}>{variant ? `Розмір ${variant.size}:` : 'Оберіть розмір, щоб побачити наявність саме його. Зараз — усі розміри:'}</div>}
+        {p.real && sizes && <div style={{ fontSize:12.5, color:'var(--ink-500)', fontWeight:600, margin:'-4px 0 6px' }}>{variant ? `${p.height ? 'Зріст' : 'Розмір'} ${S.sizeText(p, variant.size)}:` : 'Оберіть розмір, щоб побачити наявність саме його. Зараз — усі розміри:'}</div>}
         {S.STORES.map(s=>{
           /* real goods: units of the chosen size (or of all sizes) in this shop; demo: the static label */
           const n = p.real ? (variant ? variant.stock[s.id] : p.stock[s.id]) || 0 : null;
@@ -407,7 +411,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
                 <div><span style={{fontWeight:800,fontSize:14,color:'var(--ink-900)'}}>{s.id}</span> <span style={{fontSize:12.5,color:'var(--ink-500)',fontWeight:600}}>· {s.city}, {s.area.split('·')[0]}</span></div>
                 <span style={{ fontWeight:800, fontSize:13, color:c, display:'flex', alignItems:'center', gap:6, whiteSpace:'nowrap' }}><span aria-hidden="true" style={{width:8,height:8,borderRadius:'50%',background:st==='in'?'var(--green-500)':st==='last'?'var(--yellow-500)':'var(--ink-300)'}}></span>{lbl.uk}{p.real && n > 1 && !S.SOURCE.capped ? ` · ${n} шт.` : ''}</span>
               </div>
-              {here.length > 0 && <div style={{ fontSize:12.5, color:'var(--ink-700)', fontWeight:700, marginTop:4 }}>Розміри: {here.join(', ')}</div>}
+              {here.length > 0 && <div style={{ fontSize:12.5, color:'var(--ink-700)', fontWeight:700, marginTop:4 }}>{p.height ? 'Зріст' : 'Розміри'}: {here.map(x=>S.sizeText(p,x)).join(', ')}</div>}
             </div>
           );
         })}
@@ -420,10 +424,10 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
           <Button variant="secondary" fullWidth icon={Icon('phone-call')} onClick={openDM}>Уточнити наявність</Button>
         </div>
         <div style={{ display:'flex', gap:8, marginTop:2 }}>
-          {[['Direct','instagram','var(--pink-500)'],['Viber','phone','var(--info)'],['Telegram','send','var(--blue-500)']].map(m=>(
-            <button key={m[0]} onClick={openDM} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'var(--font-display)', fontWeight:600, fontSize:13.5, padding:'11px 0', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', background:'#fff', color:'var(--ink-700)', cursor:'pointer' }}>
-              <i data-lucide={m[1]} style={{width:16,height:16,color:m[2]}}></i>{m[0]}
-            </button>
+          {[['Direct','instagram','var(--pink-500)','https://www.instagram.com/alisa.kids.shop/'],['Viber','phone','var(--info)','viber://chat?number=%2B380988222964'],['Подзвонити','phone-call','var(--green-600)','tel:+380988222964']].map(m=>(
+            <a key={m[0]} href={m[3]} target={m[3].startsWith('http') ? '_blank' : undefined} rel="noopener" style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'var(--font-display)', fontWeight:600, fontSize:13.5, padding:'11px 0', borderRadius:'var(--radius-pill)', border:'2px solid var(--ink-200)', background:'#fff', color:'var(--ink-700)', textDecoration:'none' }}>
+              <i data-lucide={m[1]} style={{width:16,height:16,color:m[2]}} aria-hidden="true"></i>{m[0]}
+            </a>
           ))}
         </div>
       </div>
@@ -472,7 +476,7 @@ function ProductScreen({ nav, addToCart, params, openDM }) {
       <SectionHead title="Безпека та якість" />
       <div style={{ background:'var(--green-100)', borderRadius:'var(--radius-md)', padding:'14px 16px', marginBottom:18 }}>
         <ul style={{ margin:0, paddingLeft:18, fontSize:14, color:'var(--ink-700)', lineHeight:1.6, fontWeight:500 }}>
-          <li>Вік / розмір: <b style={{color:'var(--ink-900)'}}>{p.ages==='one'?'один розмір':p.ages}</b> — якщо вагаєтесь, підкажемо по телефону.</li>
+          <li>Розмір: <b style={{color:'var(--ink-900)'}}>{p.sizeNote || (p.ages==='one'?'один розмір':p.ages)}</b> — якщо вагаєтесь, підкажемо по телефону.</li>
           <li>Усі товари можна оглянути та приміряти у наших магазинах перед покупкою.</li>
           <li>Якщо щось не так — обмін або повернення протягом 14 днів із чеком.</li>
         </ul>

@@ -1,10 +1,8 @@
 <!-- @startingPoint section="Webshop" subtitle="Web shop blueprint: sitemap, flows, MVP plan" viewport="900x1200" -->
 <!DOCTYPE html>
-<html lang="uk"><head><meta charset="utf8"><!-- Supply-chain hardening. 'unsafe-eval' is required only because this prototype
-     compiles JSX in the browser with Babel; the production build removes both
-     'unsafe-eval' and the CDN entirely. Note: frame-ancestors and HSTS cannot be set
-     via <meta> — they need real response headers (see SECURITY.md). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<html lang="uk"><head><meta charset="utf8"><!-- CSP: scripts only from this site (icons come from the shop build, no CDN). frame-ancestors and HSTS cannot be
+     set via <meta> — they need real response headers (_headers on Cloudflare, see SECURITY.md). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аліса — Web shop blueprint</title>
 <link rel="stylesheet" href="../../styles.css">
@@ -106,25 +104,25 @@
   <div class="card">
     <h3 style="margin-top:0">A · Купівля онлайн (semi-manual)</h3>
     <div class="flow">
-      <span class="node">Головна</span><span class="arrow">→</span><span class="node">Категорія</span><span class="arrow">→</span>
-      <span class="node">Товар</span><span class="arrow">→</span><span class="node">Розмір + кошик</span><span class="arrow">→</span>
-      <span class="node">Кошик</span><span class="arrow">→</span><span class="node">Оформлення</span><span class="arrow">→</span>
+      <span class="node">Головна</span><span class="arrow">›</span><span class="node">Категорія</span><span class="arrow">›</span>
+      <span class="node">Товар</span><span class="arrow">›</span><span class="node">Розмір + кошик</span><span class="arrow">›</span>
+      <span class="node">Кошик</span><span class="arrow">›</span><span class="node">Оформлення</span><span class="arrow">›</span>
       <span class="node end">Менеджер підтверджує</span>
     </div>
     <p style="margin:0;font-size:14px;color:var(--ink-500)">Замовлення — це <b>запит</b>. Жодної онлайн-оплати на старті: магазин телефонує, підтверджує наявність і домовляється про доставку/оплату.</p>
   </div>
   <div class="two">
     <div class="card"><h3 style="margin-top:0">B · Прямий зв’язок</h3>
-      <div class="flow"><span class="node">Товар</span><span class="arrow">→</span><span class="node alt">Direct / Viber / Telegram</span><span class="arrow">→</span><span class="node end">Розмова → продаж</span></div>
+      <div class="flow"><span class="node">Товар</span><span class="arrow">›</span><span class="node alt">Direct / Viber / Telegram</span><span class="arrow">›</span><span class="node end">Розмова → продаж</span></div>
       <p style="margin:0;font-size:13.5px;color:var(--ink-500)">Кнопка «Уточнити наявність» завжди поруч із «Додати в кошик».</p>
     </div>
     <div class="card"><h3 style="margin-top:0">C · Самовивіз із магазину</h3>
-      <div class="flow"><span class="node">Товар</span><span class="arrow">→</span><span class="node">Наявність A-1/2/3</span><span class="arrow">→</span><span class="node alt">Забронювати</span><span class="arrow">→</span><span class="node end">Забрати в магазині</span></div>
+      <div class="flow"><span class="node">Товар</span><span class="arrow">›</span><span class="node">Наявність A-1/2/3</span><span class="arrow">›</span><span class="node alt">Забронювати</span><span class="arrow">›</span><span class="node end">Забрати в магазині</span></div>
       <p style="margin:0;font-size:13.5px;color:var(--ink-500)">Зв’язок онлайн ↔ офлайн — головна перевага мережі.</p>
     </div>
   </div>
-  <div class="card"><h3 style="margin-top:0">D · Соцмережі → магазин</h3>
-    <div class="flow"><span class="node alt">Instagram bio</span><span class="arrow">→</span><span class="node">Link-in-bio</span><span class="arrow">→</span><span class="node">Новинки / Акції / Іграшки</span><span class="arrow">→</span><span class="node end">Товар або Direct</span></div>
+  <div class="card"><h3 style="margin-top:0">D · Соцмережі › магазин</h3>
+    <div class="flow"><span class="node alt">Instagram bio</span><span class="arrow">›</span><span class="node">Link-in-bio</span><span class="arrow">›</span><span class="node">Новинки / Акції / Іграшки</span><span class="arrow">›</span><span class="node end">Товар або Direct</span></div>
   </div>
 
   <!-- 3 COMPONENTS -->
@@ -198,7 +196,7 @@
     <p style="margin:0">The business has limited management capacity and no real-time stock sync. The whole design treats an order as a <b>request the store confirms</b> — clearly messaged at cart, checkout and confirmation. This avoids overselling frozen inventory and lets Alisa launch without warehouse integration. Online card payment is shown as “скоро”.</p>
   </div>
   <div class="card"><h3 style="margin-top:0">Photos & assets</h3>
-    <p style="margin:0">Product images are on-brand color-tinted placeholders by category. Replace with real photography on a clean light background (vertical/square preferred). Everything else — logo, colors, type (Fredoka + Nunito), icons (Lucide) — comes from the design system.</p>
+    <p style="margin:0">Product images are on-brand color-tinted placeholders by category. Replace with real photography on a clean light background (vertical/square preferred). Everything else — logo, colors, type (Rubik + Nunito), icons (Lucide) — comes from the design system.</p>
   </div>
 
   <!-- 6 MVP -->
@@ -239,6 +237,5 @@
     <p style="margin:0;font-weight:700;color:var(--pink-700)">Principle: keep it operable by a small family team. Add complexity only when sales volume justifies the extra work.</p>
   </div>
 </div>
-<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js" integrity="sha384-xxUH8dZ+9qK6wOz3bNViyhHSIuVBQT5jsFlZAowZsRzRDsEqGjLGMJ/Wg10MPC3H" crossorigin="anonymous"></script>
-<script>window.lucide&&lucide.createIcons();</script>
+<script src="build/icons.js"></script>
 </body></html>

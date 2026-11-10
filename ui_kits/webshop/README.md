@@ -15,9 +15,22 @@ A complete, MVP-ready e-commerce design for Alisa Kids Store, built on the desig
 - `app.jsx` — router, phone shell, bottom nav, overlays (filters, search, menu, DM), size guide.
 - `desktop.jsx` — desktop homepage (reuses data + ui).
 
+## Build (since 2026-11-09)
+The pages load a **production build**, not the .jsx: `build/shop-mobile.js` / `build/shop-desktop.js` (precompiled JSX),
+`build/vendor/` (React 18.3.1), `build/icons.js` (only the Lucide icons in use, rendered by React), `build/shop.css`
+(design tokens in one file). No Babel and no CDN at runtime, so the CSP is `script-src 'self'`.
+
+After editing any `.jsx` (or the tokens):
+```
+npm install        # once
+npm run build      # rewrites ui_kits/webshop/build/
+npm run check      # fails if build/ is older than the sources
+```
+Commit the `build/` folder together with the .jsx. Page addresses are hash routes: `#/product/<id>`, `#/catalog?col=winter`.
+
 ## Notes
 - Each `.jsx` is wrapped in an IIFE (the babel `<script>`s share one global scope — IIFEs prevent `const` collisions; only `window.*` exports leak).
-- Loads `styles.css` + `_ds_bundle.js` (namespace `window.AlisaKidsStoreDesignSystem_194dcf`) + Lucide icons.
+- Loads `build/shop.css` + Google Fonts (Rubik + Nunito, both with full Cyrillic) + `_ds_bundle.js` (namespace `window.AlisaKidsStoreDesignSystem_194dcf`) + `build/icons.js`.
 - Product photos are on-brand color-tinted placeholders by category — replace with real photography.
 - Category colors: blue = одяг, green = іграшки, yellow = сезонне, pink = розпродаж/brand.
 

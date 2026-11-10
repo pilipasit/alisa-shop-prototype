@@ -21,9 +21,19 @@
   # Same policy as the in-page <meta> CSP, plus the two directives a meta tag cannot express.
   # connect-src includes the order Worker so the checkout can reach it — pinned to the
   # exact host rather than a *.workers.dev wildcard.
-  # ⚠️ 'unsafe-eval' exists ONLY for in-browser Babel. When the production build lands,
-  #    delete 'unsafe-eval', drop https://unpkg.com, and update the <meta> CSP to match.
+  # This site-wide policy stays loose ONLY for the design-system cards (components/, guidelines/,
+  # ui_kits/presentation|retail-materials|social), which still compile JSX in the browser.
+  # The shop itself is a production build (tools/build.mjs) and gets the strict policy below on top:
+  # when two CSP headers apply, the browser enforces both, i.e. the stricter one wins.
   Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+
+# The shop and the landing page: scripts only from this site — no CDN, no inline scripts, no eval.
+/ui_kits/webshop/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://alisa-orders.mrsupetbred.workers.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+/
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+/index.html
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
 
 # Product photos and logos change rarely — cache them for a week.
 /assets/*

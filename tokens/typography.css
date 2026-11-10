@@ -1,7 +1,7 @@
 /* Alisa Kids Store — Typography tokens */
 :root {
   /* Families */
-  --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif; /* headings, signage, prices */
+  --font-display: 'Rubik', 'Nunito', system-ui, sans-serif; /* headings, signage, prices */
   --font-body:    'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif; /* body, UI */
 
   /* Weights */
